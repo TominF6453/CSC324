@@ -70,12 +70,20 @@ Hint: look up "declaring optional arguments in Racket". The syntax is
 pretty straight-forward. Note that optional arguments must appear
 *after* all the required ones.
 |#
+(define (custom-listref lst pos)
+  (cond
+    [(null? lst) empty]
+    [(> pos (+ 1 (length lst))) empty]
+    [(equal? pos 0) (first lst)]
+    [else (let ([end (custom-listref (rest lst) (- pos 1))])
+            end)]))
+
 (define (containspos? item lst pos)
   (cond
     [(null? lst) #f] ;List is empty
     [(not (and (integer? pos) (>= pos 0))) #f] ;pos not valid integer
     [(> (+ pos 1) (length lst)) #f] ;pos out of index
-    [else (equal? (list-ref lst pos) item)]))
+    [else (equal? (custom-listref lst pos) item)]))
 
 (define (search-table-2 table item [pos 0])
   (cond
