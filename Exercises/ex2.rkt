@@ -34,8 +34,26 @@ Try using higher-order list functions when you can.
 > (cartesian-product '((1 4) (2 10)) '((3 4 5) (2)))
 '((1 4 3 4 5) (1 4 2) (2 10 3 4 5) (2 10 2))
 |#
-(define cartesian-product (void))
+(define (contains? item lst)
+  (cond
+    [(member item lst) #t]
+    [else #f]))
 
+(define (concatlist lst lsts) ;Concatenate all of lsts onto lst
+  (cond
+    [(null? lst) empty]
+    [(null? lsts) empty]
+    [(contains? empty lsts) empty]
+    [else (let ([end (concatlist lst (rest lsts))])
+            (list* (append lst (first lsts)) end))]))
+
+(define (cartesian-product table1 table2)
+  (cond
+    [(null? table1) empty]
+    [(contains? empty table1) empty]
+    [(contains? empty table2) empty]
+    [else (let ([end (cartesian-product (rest table1) table2)])
+            (append (concatlist (first table1) table2) end))]))
 
 #|
 (function-sort functions arg)
@@ -65,4 +83,5 @@ Hint:
 - the built-in sort is actually a higher-order function, with an optional
 function parameter #:key
 |#
-(define function-sort (void))
+(define (function-sort functions arg)
+  (sort functions < #:key (λ (func) (func arg))))
