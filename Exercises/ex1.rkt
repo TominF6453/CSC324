@@ -37,9 +37,17 @@ You may use either explicit recursion, or higher-order list functions.
 |#
 ; Feel free to change this signature to use the shorthand for defining functions
 ; (define (search-table ...) (...))
+(define (fmember item lst)
+  (cond
+    [(null? item) #t]
+    [(null? lst) #f]
+    [(equal? item (first lst)) #t]
+    [else (let ([end (fmember item (rest lst))])
+            end)]))
+              
 (define (contains? item lst) ;Helper function, returns #f or #t whether or not item is
   (cond                      ; is lst.
-    [(member item lst) #t]
+    [(fmember item lst) #t]
     [else #f]))
 
 (define (search-table table item)
