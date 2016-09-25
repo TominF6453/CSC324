@@ -39,22 +39,14 @@ Try using higher-order list functions when you can.
     [(member item lst) #t]
     [else #f]))
 
-(define (concatlist lst lsts) ;Concatenate all of lsts onto lst
-  (cond
-    [(null? lst) empty]
-    [(null? lsts) empty]
-    [(contains? empty lsts) empty]
-    [else (let ([end (concatlist lst (rest lsts))])
-            (list* (append lst (first lsts)) end))]))
-
 (define (cartesian-product table1 table2)
   (cond
     [(null? table1) empty]
+    [(null? table2) empty]
     [(contains? empty table1) empty]
     [(contains? empty table2) empty]
-    [else (let ([end (cartesian-product (rest table1) table2)])
-            (append (concatlist (first table1) table2) end))]))
-
+    [else
+     (append-map (λ (lst1) (map (λ (lst2) (append lst1 lst2)) table2)) table1)]))
 #|
 (function-sort functions arg)
   functions: a list (f1, f2, ... fn) of unary functions
