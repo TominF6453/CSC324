@@ -43,8 +43,6 @@ Try using higher-order list functions when you can.
   (cond
     [(null? table1) empty]
     [(null? table2) empty]
-    [(contains? empty table1) empty]
-    [(contains? empty table2) empty]
     [else
      (append-map (λ (lst1) (map (λ (lst2) (append lst1 lst2)) table2)) table1)]))
 #|
