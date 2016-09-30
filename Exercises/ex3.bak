@@ -37,7 +37,6 @@ Implement each of the following two macros.
 |#
 (define-syntax flipped-and
   (syntax-rules ()
-    [(flipped-and) #t]
     
     
   ))
