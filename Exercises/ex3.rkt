@@ -38,9 +38,8 @@ Implement each of the following two macros.
 (define-syntax flipped-and
   (syntax-rules ()
     [(flipped-and) #t]
-    
-    
-  ))
+    [(flipped-and <garb> ... <last>)
+     (and <last> (flipped-and <garb> ...))]))
 
 #|
 (record <class> (<attr1> ...))
@@ -74,8 +73,18 @@ inside the "begin".
 |#
 (define-syntax record
   (syntax-rules ()
-    
-  ))
+    [(record <class> (<attr> ...)
+             [(<method> <param> ...) <body>]
+             ...
+             )
+     (define (<class> <attr> ...)
+       (λ (msg)
+         (cond [(equal? msg (id->string <attr>)) <attr>]
+               ...
+               [(equal? msg (id->string <method>))
+                (λ (<param> ...) <body>)]
+               ...
+               [else "Attribute error"])))]))
 
 ; For your reference, the class macro from lecture notes.
 (define-syntax class
