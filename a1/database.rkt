@@ -29,9 +29,8 @@ Brendan Neal, nealbre1, 1001160226
   Returns a list of the attributes in 'table', in the order they appear.
 |#
 (define (attributes table)
-         ; First row of the table is the attributes, so just return first element
-        (head table)
-)
+  ; First row of the table is the attributes, so just return first element
+  (head table))
 
 #|
 (tuples table)
@@ -41,10 +40,9 @@ Brendan Neal, nealbre1, 1001160226
   Note: it is possible for 'table' to contain no tuples.
 |#
 (define (tuples table)
-        ; Everything beyond the first index is a tuple
-        ; Just return the tail of the list
-        (tail table)
-)
+  ; Everything beyond the first index is a tuple
+  ; Just return the tail of the list
+  (tail table))
 
 #|
 (size table)
@@ -53,10 +51,9 @@ Brendan Neal, nealbre1, 1001160226
   Returns the number of tuples in 'table'.
 |#
 (define (size table)
-        ; First element is the attribute specifier,
-        ; so it cannot be included as part of size
-        (- (length table) 1)
-)
+  ; First element is the attribute specifier,
+  ; so it cannot be included as part of size
+  (- (length table) 1))
 
 
 ; Part I "WHERE" helpers; you may or may not wish to implement these.
@@ -71,9 +68,7 @@ Brendan Neal, nealbre1, 1001160226
 |#
 (define (get-value attribute-template target-attribute tup)
   (let ([att-index (index-of target-attribute attribute-template)])
-    (list-ref tup att-index)
-  )
-)
+    (list-ref tup att-index)))
 
 #|
 (get-value attribute-template target-attributes tup): 
@@ -88,20 +83,13 @@ Brendan Neal, nealbre1, 1001160226
 (define (get-values attribute-template target-attributes tup)
   (cond [(null? target-attributes) empty]
         [else (append (list (get-value
-                                      attribute-template
-                                      (head target-attributes)
-                                      tup
-                            )
-                      )
+                             attribute-template
+                             (head target-attributes)
+                             tup))
                       (get-values
-                                 attribute-template
-                                 (tail target-attributes)
-                                 tup
-                      )
-              )
-        ]
-  )
-)
+                       attribute-template
+                       (tail target-attributes)
+                       tup))]))
 
 
 
@@ -117,9 +105,7 @@ Brendan Neal, nealbre1, 1001160226
   ; Want the head of the list to be the attributes of the table
   ; Want the tail of the list to be the satisying tuples
   (append (head table)
-          (filter f (tuples table))
-  )
-)
+          (filter f (tuples table))))
 
 #|
 (index-of x lst)
@@ -138,12 +124,7 @@ Brendan Neal, nealbre1, 1001160226
 (define (index-of x lst)
   (cond [(equal? #f (member x lst)) -1]
         [else (cond [(equal? (head lst) x) 0]
-                    [else (+ 1 (index-of x (tail lst)))]
-              )
-        ]
-  )
-)
-
+                    [else (+ 1 (index-of x (tail lst)))])]))
 
 #|
 A function 'replace-attr' that takes:
@@ -156,9 +137,9 @@ A function 'replace-attr' that takes:
     - Otherwise, just ignore the tuple and return 'x'.
 |#
 (define (replace-attr x attr-lst)
-  (define (f tuple)
-    (cond [(not (member x attr-lst)) x]
-  )))
+  (If (false? (member x attr-lst))
+      (λ(tuple) x)
+      (λ(tuple) (list-ref tuple (index-of x attr-lst)))))
 
 #|
 (cartesian-helper table1 table2)
@@ -183,8 +164,8 @@ A function 'replace-attr' that takes:
 
 (define (cartesian-product table1 table2)
   (list* (append (head table1) (head table2))
-          (cartesian-helper (tuples table1)
-                            (tuples table2))))
+         (cartesian-helper (tuples table1)
+                           (tuples table2))))
 
 ; Starter for Part 3; feel free to ignore!
 
