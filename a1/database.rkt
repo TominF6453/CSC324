@@ -141,6 +141,7 @@ A function 'replace-attr' that takes:
       (λ(tuple) x)
       (λ(tuple) (list-ref tuple (index-of x attr-lst)))))
 
+; Cartesian Product Functions - Used for FROM clause (multiple tables)
 #|
 (cartesian-helper table1 table2)
   table1: list of lists [K1, K2, ..., Km]
@@ -162,10 +163,44 @@ A function 'replace-attr' that takes:
     [else
      (append-map (λ (lst1) (map (λ (lst2) (append lst1 lst2)) table2)) table1)]))
 
+#|
+(cartesian-product table1 table2)
+  table1, table2: lists of lists in the table format specified by the assignment
+
+  Returns a list of the following form:
+      Head: concatenation of the attributes of table1 and table2, in that order
+      Tail: cartesian product of the tuples of table1 and table2, in the form:
+            (table1 data, table2 data)
+
+> (cartesian-product '(("A" "B") (1 2) (3 4)) '(("C") (5)))
+'(("A" "B" "C") (1 2 5) (3 4 5))
+|#
 (define (cartesian-product table1 table2)
   (list* (append (head table1) (head table2))
          (cartesian-helper (tuples table1)
                            (tuples table2))))
+; Use the multi-cartesian on the list of tables in FROM
+#|
+(multi-cartesian table-list)
+  table-list: list of (lists of lists in the table format specified by the assignment)
+
+  Returns a list of the following form:
+      Head: concatenation of the attributes of all the tables in table-list,
+            in order of appearance
+      Tail: cartesian product of the tuples of all the tables in table-list.
+
+> (multi-cartesian (list '(("A" "B") (1 2) (3 4)) '(("C") (5)) '(("D") (6))))
+'(("A" "B" "C" "D") (1 2 5 6) (3 4 5 6))
+|#
+(define (multi-cartesian table-list)
+  (cond [(equal? 1 (length table-list))(head table-list)]
+        [else (cartesian-product
+               (head table-list)
+               (multi-cartesian (tail table-list)))
+              ]
+        )
+  )
+
 
 ; Starter for Part 3; feel free to ignore!
 
