@@ -14,6 +14,34 @@ Brendan Neal, nealbre1, 1001160226
 (define (tail lst) (rest lst))
 (define (head lst) (first lst))
 
+; Generic helper functions
+#|
+(contains item lst)
+   item: an object
+   lst: a list of objects the same type as item
+
+   Returns a boolean value indicating whether or not item is in lst.
+
+> (contains 1 '(1 2 3))
+#t
+> (contains 1 '())
+#f
+> (contains 1 '(2 3))
+#f
+> (contains 1 '(2))
+#f
+> (contains 1 '(1))
+#t
+|#
+(define (contains item lst)
+  (cond [(null? lst) #f]
+        [else (or (equal? (car lst) item)
+                  (contains item (cdr lst))
+               )
+        ]
+  )
+)
+
 ; TODO: After you have defined your macro(s), make sure you add each one
 ; to the provide statement.
 (provide attributes
@@ -179,7 +207,8 @@ A function 'replace-attr' that takes:
   (list* (append (head table1) (head table2))
          (cartesian-helper (tuples table1)
                            (tuples table2))))
-; Use the multi-cartesian on the list of tables in FROM
+
+; Use the multi-cartesian on the list of tables in FROM - need to implement column renaming
 #|
 (multi-cartesian table-list)
   table-list: list of (lists of lists in the table format specified by the assignment)
@@ -201,6 +230,33 @@ A function 'replace-attr' that takes:
         )
   )
 
+#|
+(same-attribute-names table1 table2)
+     table1, table2: lists of lists in the table format specified by the assignment
+
+     Returns a list of attributes that appear in borth table1 and table2
+
+> (same-attribute-names '(("A" "C") (1 2)) '(("A" "B" "C") (4 5 6)))
+'("A" "C")
+|#
+(define (same-attribute-names table1 table2)
+  (filter (lambda (x) contains x (attributes table2))
+          (attributes table1)
+          )
+  )
+
+#|
+(rename-same-attributes table1 table2)
+     table1, table2: lists of lists in the table format specified by the assignment
+
+     Returns a 2-long list of lists in the following format:
+         First element: list of renamed attributes for table1
+         Second element: list of renamed attributes for table2
+     Attributes that have the same name 
+
+> (same-attribute-names '(("A" "C") (1 2)) '(("A" "B" "C") (4 5 6)))
+'("A" "C")
+|#
 
 ; Starter for Part 3; feel free to ignore!
 
