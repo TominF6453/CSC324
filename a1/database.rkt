@@ -214,8 +214,8 @@ A function 'replace-attr' that takes:
 > (cartesian-product '(("A" "B") (1 2) (3 4)) '(("C") (5)))
 '(("A" "B" "C") (1 2 5) (3 4 5))
 |#
-(define (cartesian-product table1 table2)
-  (list* (append (head table1) (head table2))
+(define (cartesian-product table1 table2) 
+  (list* (append (head table1) (head table2)) ; Helper to rename similar columns goes here instead.
          (cartesian-helper (tuples table1)
                            (tuples table2))))
 
@@ -226,7 +226,7 @@ A function 'replace-attr' that takes:
 
   Returns a list of the following form:
       Head: concatenation of the attributes of all the tables in table-list,
-            in order of appearance
+            in order of appearance, renaming attributes that are shared between tables.
       Tail: cartesian product of the tuples of all the tables in table-list.
 
 > (multi-cartesian (list '(("A" "B") (1 2) (3 4)) '(("C") (5)) '(("D") (6))))
@@ -236,25 +236,20 @@ A function 'replace-attr' that takes:
   (cond [(equal? 1 (length table-list))(head table-list)]
         [else (cartesian-product
                (head table-list)
-               (multi-cartesian (tail table-list)))
-              ]
-        )
-  )
+               (multi-cartesian (tail table-list)))]))
 
 #|
 (same-attribute-names table1 table2)
      table1, table2: lists of lists in the table format specified by the assignment
 
-     Returns a list of attributes that appear in borth table1 and table2
+     Returns a list of attributes that appear in both table1 and table2
 
 > (same-attribute-names '(("A" "C") (1 2)) '(("A" "B" "C") (4 5 6)))
 '("A" "C")
 |#
 (define (same-attribute-names table1 table2)
   (filter (lambda (x) contains x (attributes table2))
-          (attributes table1)
-          )
-  )
+          (attributes table1)))
 
 #|
 (rename-same-attributes table1 table2)
