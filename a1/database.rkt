@@ -8,9 +8,24 @@ Brendan Neal, nealbre1, 1001160226
 
 ; Function versions for common syntactic forms.
 ; *Use these in your queries instead of the syntactic forms!!!*
-(define (And x y) (and x y))
-(define (Or x y) (or x y))
-(define (If x y z) (if x y z))
+; (define (And x y) (and x y))
+; (define (Or x y) (or x y))
+; (define (If x y z) (if x y z))
+(define-syntax Or
+  (syntax-rules ()
+    ((Or <args> ...)
+     (or <args> ...))))
+
+(define-syntax And
+  (syntax-rules ()
+    ((And <args> ...)
+     (and <args> ...))))
+
+(define-syntax If
+  (syntax-rules ()
+  ((If a b c)
+  (if a b c))))
+
 (define (tail lst) (rest lst))
 (define (head lst) (first lst))
 
@@ -36,11 +51,7 @@ Brendan Neal, nealbre1, 1001160226
 (define (contains item lst)
   (cond [(null? lst) #f]
         [else (or (equal? (car lst) item)
-                  (contains item (cdr lst))
-               )
-        ]
-  )
-)
+                  (contains item (cdr lst)))]))
 
 ; TODO: After you have defined your macro(s), make sure you add each one
 ; to the provide statement.
