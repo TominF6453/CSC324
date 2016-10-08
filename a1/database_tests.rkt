@@ -1,8 +1,8 @@
 #| Assignment 1 - Racket Query Language Tests (due Oct 14, 11:50pm)
 
 ***Write the names, CDF accounts and student id for each of your group members below.***
-<Name>, <CDF>, <ID>
-<Name>, <CDF>, <ID>
+Filip Tomin, tominfil, 1001329984
+Brendan Neal, nealbre1, 1001160226
 |#
 
 ; Note the use of plai here; this is required for "test"
