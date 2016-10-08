@@ -5,6 +5,7 @@ Filip Tomin, tominfil, 1001329984
 Brendan Neal, nealbre1, 1001160226
 |#
 #lang racket
+(provide SELECT)
 
 ; Function versions for common syntactic forms.
 ; *Use these in your queries instead of the syntactic forms!!!*
@@ -110,7 +111,7 @@ Brendan Neal, nealbre1, 1001160226
     (list-ref tup att-index)))
 
 #|
-(get-value attribute-template target-attributes tup): 
+(get-values attribute-template target-attributes tup): 
   - attribute-template: a list of attributes
   - target-attributes: a subset of attributes in attribute-template
   - tup: a tuple
@@ -129,6 +130,20 @@ Brendan Neal, nealbre1, 1001160226
                        attribute-template
                        (tail target-attributes)
                        tup))]))
+
+#|
+(get-subtable target-attributes table): 
+  - target-attributes: a subset of table's attributes
+  - tup: a tuple
+
+  Returns the tuples of table with only the attributes mentioned in target-attributes.
+|#
+(define (get-subtable target-attributes table)
+  (append
+   (list target-attributes)
+   (map (λ(tup) (get-values (attributes table) target-attributes tup))
+        (tuples table))
+   ))
 
 
 
@@ -277,3 +292,16 @@ A function 'replace-attr' that takes:
     [(replace atom table)
      ; Change this!
      (void)]))
+
+
+; Start of SQL-like syntax macro
+(define-syntax SELECT
+  (syntax-rules (FROM)
+    [(SELECT <attr-lst> FROM <tables> ...)
+     (let ([resulting-table (multi-cartesian (list <tables> ...))])
+       (cond [(list? <attr-lst>) (get-subtable
+                                  <attr-lst>
+                                  resulting-table)]
+             [else (get-subtable
+                      (attributes resulting-table)
+                      resulting-table)]))]))
