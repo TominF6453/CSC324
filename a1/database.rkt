@@ -28,6 +28,7 @@ Brendan Neal, nealbre1, 1001160226
 
 (define (tail lst) (rest lst))
 (define (head lst) (first lst))
+(define (no-attr-error) "Attribute does not exist!")
 
 ; Generic helper functions
 #|
@@ -52,6 +53,26 @@ Brendan Neal, nealbre1, 1001160226
   (cond [(null? lst) #f]
         [else (or (equal? (car lst) item)
                   (contains item (cdr lst)))]))
+
+
+#|
+(number-of item lst)
+   item: an object
+   lst: a list of objects the same type as item
+
+   Returns an integer representing the number of times item appears in lst.
+
+> (number-of 1 '(1 2 3))
+1
+> (number-of 4 '(1 2 3))
+0
+>(number-of 1 '())
+0
+>(number-of 1 '(1 1 1))
+3
+|#
+(define (number-of item lst)
+  (count (λ(x) (equal? x item)) lst))
 
 ; TODO: After you have defined your macro(s), make sure you add each one
 ; to the provide statement.
@@ -104,10 +125,13 @@ Brendan Neal, nealbre1, 1001160226
   - tup: a tuple
 
   Returns the value of the tuple corresponding to that attribute.
+  If target-attribute is not in attribute-template, returns
+  "Attribute does not exist!" (Piazza 181)
 |#
 (define (get-value attribute-template target-attribute tup)
   (let ([att-index (index-of target-attribute attribute-template)])
-    (list-ref tup att-index)))
+    (cond [(equal? att-index -1) no-attr-error]
+          [else (list-ref tup att-index)])))
 
 #|
 (get-value attribute-template target-attributes tup): 
@@ -129,9 +153,6 @@ Brendan Neal, nealbre1, 1001160226
                        attribute-template
                        (tail target-attributes)
                        tup))]))
-
-
-
 #|
 (tups-satisfying f table)
   - f: a unary function that takes a tuple and returns a boolean value
@@ -176,9 +197,8 @@ A function 'replace-attr' that takes:
     - Otherwise, just ignore the tuple and return 'x'.
 |#
 (define (replace-attr x attr-lst)
-  (If (false? (member x attr-lst))
-      (λ(tuple) x)
-      (λ(tuple) (list-ref tuple (index-of x attr-lst)))))
+  (cond [(not (member x attr-lst)) (λ(tuple) x)]
+        [else (λ(tuple) list-ref tuple (index-of x attr-lst))]))
 
 ; Cartesian Product Functions - Used for FROM clause (multiple tables)
 #|
@@ -239,30 +259,41 @@ A function 'replace-attr' that takes:
                (multi-cartesian (tail table-list)))]))
 
 #|
-(same-attribute-names table1 table2)
-     table1, table2: lists of lists in the table format specified by the assignment
+(same-attribute-names tables)
+     tables: list of tables in the format specified by the assignment
 
-     Returns a list of attributes that appear in both table1 and table2
+     Returns a list of attributes that appear in more than one table in tables.
 
-> (same-attribute-names '(("A" "C") (1 2)) '(("A" "B" "C") (4 5 6)))
+> (same-attribute-names (list '(("A" "C") (1 2)) '(("A" "B" "C") (4 5 6))))
 '("A" "C")
+> (same-attribute-names (list '(("A" "C") (1 2)) '(("A" "B" "C") (4 5 6)) '(("B" "D") (3 4))))
+'("A" "C" "B")
 |#
-(define (same-attribute-names table1 table2)
-  (filter (lambda (x) contains x (attributes table2))
-          (attributes table1)))
+(define (same-attribute-names tables)
+  (let ([attribute-list (map attributes tables)])
+        (let ([merged-attributes (apply append attribute-list)])
+          (remove-duplicates (filter
+                                    (λ(attr) (> (number-of attr merged-attributes) 1))
+                                     merged-attributes)))))
 
 #|
-(rename-same-attributes table1 table2)
-     table1, table2: lists of lists in the table format specified by the assignment
+(rename-attribute table original-name new-name)
+     table: a table in the format specified by the assignment
+     original-name: the attribute to be renamed
+     new-name: the new name of the attribute to be renamed
 
-     Returns a 2-long list of lists in the following format:
-         First element: list of renamed attributes for table1
-         Second element: list of renamed attributes for table2
-     Attributes that have the same name 
+     Returns a new table with attribute with name original-name renamed to new-name.
 
-> (same-attribute-names '(("A" "C") (1 2)) '(("A" "B" "C") (4 5 6)))
-'("A" "C")
+> (rename-attribute '(("A" "C") (1 2)) "A" "Apples")
+'(("Apples" "C") (1 2))
 |#
+(define (rename-attribute table original-name new-name)
+  (let ([attrs (attributes table)])
+    (let ([renamed-attrs (map (λ(attr) (cond [(equal? attr original-name) new-name]
+                                             [else attr]))
+                              attrs)])
+      (append (list renamed-attrs)
+               (tuples table)))))
 
 ; Starter for Part 3; feel free to ignore!
 
