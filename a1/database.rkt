@@ -153,6 +153,22 @@ Brendan Neal, nealbre1, 1001160226
                        attribute-template
                        (tail target-attributes)
                        tup))]))
+
+#|
+(get-subtable target-attributes table): 
+  - target-attributes: a subset of table's attributes
+  - tup: a tuple
+  Returns the tuples of table with only the attributes mentioned in target-attributes.
+|#
+(define (get-subtable target-attributes table)
+  (append
+   (list target-attributes)
+   (map (λ(tup) (get-values
+                           (attributes table)
+                           target-attributes
+                           tup))
+        (tuples table))))
+
 #|
 (tups-satisfying f table)
   - f: a unary function that takes a tuple and returns a boolean value
@@ -295,6 +311,31 @@ A function 'replace-attr' that takes:
       (append (list renamed-attrs)
                (tuples table)))))
 
+#|
+(rename-attributs table original-names new-names)
+     table: a table in the format specified by the assignment
+     original-name: the attributes to be renamed
+     new-name: the new name of the attributes to be renamed (in the same order as original-name)
+
+     Returns a new table with attribute with original-names renamed to new-names.
+
+> (rename-attributes '(("A" "C") (1 2)) '("A" "C") '("Apples" "Cranberries"))
+'(("Apples" "Cranberries") (1 2))
+|#
+(define (rename-attributes table original-names new-names)
+  (cond [(not (equal? (length original-names) (length new-names)))
+         "new-names must be the same length as original-names"]
+        [(and (empty? original-names) (empty? new-names)) table]
+        [else (let ([first-stage (rename-attribute
+                                                  table
+                                                  (head original-names)
+                                                  (head new-names))])
+                (rename-attributes
+                                  first-stage
+                                  (tail original-names)
+                                  (tail new-names)))]))
+
+
 ; Starter for Part 3; feel free to ignore!
 
 ; What should this macro do?
@@ -308,3 +349,32 @@ A function 'replace-attr' that takes:
     [(replace atom table)
      ; Change this!
      (void)]))
+
+; Start of SQL-like syntax macros
+(define-syntax FROM
+  (syntax-rules ()
+    ; The case where each table is given a name (multi-product)
+    [(FROM [table table-name] ...)
+     ; Find the common attributes between all the tables
+     (let ([common-attributes (same-attribute-names (list table ...))])
+       ; Use the rename attributes method to ONLY rename attributes that are common
+       ; between the two tables
+       (let ([tables-to-cross (list
+                                    (rename-attributes
+                                                      table
+                                                      common-attributes
+                                                      (map (λ(x) (string-append table-name "." x))
+                                                            common-attributes)) ... )])
+         (multi-cartesian tables-to-cross)))]
+    [(FROM table) table]))
+
+(define-syntax SELECT
+  (syntax-rules (FROM)
+    [(SELECT <attr-lst> FROM <tables> ...)
+     (let ([resulting-table (FROM <tables> ...)])
+       (cond [(list? <attr-lst>) (get-subtable
+                                              <attr-lst>
+                                              resulting-table)]
+             [else (get-subtable
+                                (attributes resulting-table)
+                                resulting-table)]))]))
