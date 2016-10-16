@@ -147,14 +147,14 @@ Brendan Neal, nealbre1, 1001160226
 |#
 (define (get-values attribute-template target-attributes tup)
   (cond [(null? target-attributes) empty]
-        [else (append (list (get-value
-                             attribute-template
-                             (head target-attributes)
-                             tup))
-                      (get-values
-                       attribute-template
-                       (tail target-attributes)
-                       tup))]))
+        [else (cons (get-value
+                              attribute-template
+                              (head target-attributes)
+                              tup)
+                    (get-values
+                               attribute-template
+                               (tail target-attributes)
+                               tup))]))
 
 #|
 (get-subtable target-attributes table): 
@@ -163,13 +163,13 @@ Brendan Neal, nealbre1, 1001160226
   Returns the tuples of table with only the attributes mentioned in target-attributes.
 |#
 (define (get-subtable target-attributes table)
-  (append
-   (list target-attributes)
-   (map (λ(tup) (get-values
-                           (attributes table)
-                           target-attributes
-                           tup))
-        (tuples table))))
+  (cons
+       target-attributes
+       (map (λ(tup) (get-values
+                               (attributes table)
+                               target-attributes
+                               tup))
+                      (tuples table))))
 
 #|
 (tups-satisfying f table)
@@ -182,7 +182,7 @@ Brendan Neal, nealbre1, 1001160226
 (define (tups-satisfying f table)
   ; Want the head of the list to be the attributes of the table
   ; Want the tail of the list to be the satisying tuples
-  (append (head table)
+  (append (attributes table)
           (filter f (tuples table))))
 
 #|
@@ -253,7 +253,7 @@ A function 'replace-attr' that takes:
 '(("A" "B" "C") (1 2 5) (3 4 5))
 |#
 (define (cartesian-product table1 table2) 
-  (list* (append (head table1) (head table2)) ; Helper to rename similar columns goes here instead.
+  (list* (append (attributes table1) (attributes table2))
          (cartesian-helper (tuples table1)
                            (tuples table2))))
 
@@ -310,8 +310,8 @@ A function 'replace-attr' that takes:
     (let ([renamed-attrs (map (λ(attr) (cond [(equal? attr original-name) new-name]
                                              [else attr]))
                               attrs)])
-      (append (list renamed-attrs)
-               (tuples table)))))
+      (cons renamed-attrs
+            (tuples table)))))
 
 #|
 (rename-attributs table original-names new-names)
@@ -350,7 +350,7 @@ A function 'replace-attr' that takes:
     ; The base case, when given just an atom. This is easier!
     [(replace atom table)
      ; Change this!
-     (void)]))
+     ()]))
 
 ; Start of SQL-like syntax macros
 (define-syntax FROM
@@ -373,7 +373,7 @@ A function 'replace-attr' that takes:
          (multi-cartesian tables-to-cross)))]))
 
 (define-syntax SELECT
-  (syntax-rules (FROM)
+  (syntax-rules (FROM WHERE ORDER BY)
     [(SELECT <attr-lst> FROM <tables> ...)
      (let ([resulting-table (FROM <tables> ...)])
        (cond [(list? <attr-lst>) (get-subtable
@@ -381,4 +381,25 @@ A function 'replace-attr' that takes:
                                               resulting-table)]
              [else (get-subtable
                                 (attributes resulting-table)
-                                resulting-table)]))]))
+                                resulting-table)]))]
+
+    [(SELECT <attr-lst> FROM <tables> ... WHERE <cond>)
+     (let ([table-to-filter (SELECT <attr-lst> FROM <tables> ...)])
+       (let ([filter-formula (replace <cond>)])
+         (tups-satisfying filter-formula table-to-filter)))]
+
+    [(SELECT <attr-lst> FROM <tables> ... ORDER BY <expr>)
+     (let ([table-to-sort] (SELECT <attr-lst> FROM <tables> ...))
+       (cons (attributes table-to-sort)
+             (sort
+                  <
+                  (tuples table-to-sort)
+                  #:key (replace <expr>))))]
+
+    [(SELECT <attr-lst> FROM <tables> ... WHERE <cond> ORDER BY <expr>)
+     (let ([table-to-sort] (SELECT <attr-lst> FROM <tables> ... WHERE <cond>))
+       (cons (attributes table-to-sort)
+             (sort
+                  <
+                  (tuples table-to-sort)
+                  #:key (replace <expr>))))]))
