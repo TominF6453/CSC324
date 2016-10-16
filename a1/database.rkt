@@ -78,7 +78,9 @@ Brendan Neal, nealbre1, 1001160226
 ; to the provide statement.
 (provide attributes
          tuples
-         size)
+         size
+         SELECT
+         FROM)
 
 ; Part 0: Semantic aliases
 
@@ -353,20 +355,22 @@ A function 'replace-attr' that takes:
 ; Start of SQL-like syntax macros
 (define-syntax FROM
   (syntax-rules ()
+    ; Just return the table if it is a singleton
+    [(FROM table) (multi-cartesian (list table))]
+    
     ; The case where each table is given a name (multi-product)
     [(FROM [table table-name] ...)
      ; Find the common attributes between all the tables
      (let ([common-attributes (same-attribute-names (list table ...))])
        ; Use the rename attributes method to ONLY rename attributes that are common
-       ; between the two tables
+       ; between the two tables (using dot notation)
        (let ([tables-to-cross (list
                                     (rename-attributes
                                                       table
                                                       common-attributes
                                                       (map (λ(x) (string-append table-name "." x))
                                                             common-attributes)) ... )])
-         (multi-cartesian tables-to-cross)))]
-    [(FROM table) table]))
+         (multi-cartesian tables-to-cross)))]))
 
 (define-syntax SELECT
   (syntax-rules (FROM)
