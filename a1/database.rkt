@@ -1,5 +1,4 @@
 #| Assignment 1 - Racket Query Language  (due Oct 14, 11:50pm)
-
 ***Write the names, CDF accounts and student IDs for each of your group members below.***
 Filip Tomin, tominfil, 1001329984
 Brendan Neal, nealbre1, 1001160226
@@ -35,9 +34,7 @@ Brendan Neal, nealbre1, 1001160226
 (contains item lst)
    item: an object
    lst: a list of objects the same type as item
-
    Returns a boolean value indicating whether or not item is in lst.
-
 > (contains 1 '(1 2 3))
 #t
 > (contains 1 '())
@@ -59,9 +56,7 @@ Brendan Neal, nealbre1, 1001160226
 (number-of item lst)
    item: an object
    lst: a list of objects the same type as item
-
    Returns an integer representing the number of times item appears in lst.
-
 > (number-of 1 '(1 2 3))
 1
 > (number-of 4 '(1 2 3))
@@ -87,7 +82,6 @@ Brendan Neal, nealbre1, 1001160226
 #|
 (attributes table)
   table: a valid table (i.e., a list of lists as specified by assigment)
-
   Returns a list of the attributes in 'table', in the order they appear.
 |#
 (define (attributes table)
@@ -97,7 +91,6 @@ Brendan Neal, nealbre1, 1001160226
 #|
 (tuples table)
   table: a valid table
-
   Returns a list of all tuples in 'table', in the order they appear.
   Note: it is possible for 'table' to contain no tuples.
 |#
@@ -109,7 +102,6 @@ Brendan Neal, nealbre1, 1001160226
 #|
 (size table)
   table: a valid table
-
   Returns the number of tuples in 'table'.
 |#
 (define (size table)
@@ -125,7 +117,6 @@ Brendan Neal, nealbre1, 1001160226
   - attribute-template: a list of attributes
   - target-attribute: string (representing an attribute)
   - tup: a tuple
-
   Returns the value of the tuple corresponding to that attribute.
   If target-attribute is not in attribute-template, returns
   "Attribute does not exist!" (Piazza 181)
@@ -140,7 +131,6 @@ Brendan Neal, nealbre1, 1001160226
   - attribute-template: a list of attributes
   - target-attributes: a subset of attributes in attribute-template
   - tup: a tuple
-
   Returns a list of values of the tuple (in order of appearance
   in target-attributes) corresponding to the targeted attributes.
   Returns the empty list if there are no targeted attributes.
@@ -161,37 +151,38 @@ Brendan Neal, nealbre1, 1001160226
   - target-attributes: a subset of table's attributes
   - tup: a tuple
   Returns the tuples of table with only the attributes mentioned in target-attributes.
+  If target-attributes is *, returns all the attributes to table.
 |#
 (define (get-subtable target-attributes table)
-  (cons
-       target-attributes
-       (map (λ(tup) (get-values
-                               (attributes table)
-                               target-attributes
-                               tup))
-                      (tuples table))))
+  (cond [(equal? * target-attributes) (get-subtable
+                                                   (attributes table)
+                                                   table)]
+        [else (cons
+                   target-attributes
+                   (map (λ(tup) (get-values
+                                 (attributes table)
+                                 target-attributes
+                                 tup))
+                        (tuples table)))]))
 
 #|
 (tups-satisfying f table)
   - f: a unary function that takes a tuple and returns a boolean value
   - table: a valid table
-
   Returns a new table containing only the tuples in 'table'
   that satisfy 'f'.
 |#
 (define (tups-satisfying f table)
   ; Want the head of the list to be the attributes of the table
   ; Want the tail of the list to be the satisying tuples
-  (append (attributes table)
+  (cons   (attributes table)
           (filter f (tuples table))))
 
 #|
 (index-of x lst)
   - x: some object
   - lst: a list of objects
-
   Returns the index of x if x is in lst. If x is not in lst, return -1.
-
 > (index-of 1 '(1 2 3))
 0
 > (index-of 2 '(1 2 3))
@@ -208,28 +199,26 @@ Brendan Neal, nealbre1, 1001160226
 A function 'replace-attr' that takes:
   - x 
   - a list of attributes
-
   and returns a function 'f' which takes a tuple and does the following:
     - If 'x' is in the list of attributes, return the corresponding value 
       in the tuple.
     - Otherwise, just ignore the tuple and return 'x'.
 |#
 (define (replace-attr x attr-lst)
-  (cond [(not (member x attr-lst)) (λ(tuple) x)]
-        [else (λ(tuple) list-ref tuple (index-of x attr-lst))]))
+  (cond [(not (member x attr-lst)) (λ(tup) x)]
+        [else (λ(tup) (list-ref
+                               tup
+                               (index-of x attr-lst)))]))
 
 ; Cartesian Product Functions - Used for FROM clause (multiple tables)
 #|
 (cartesian-helper table1 table2)
   table1: list of lists [K1, K2, ..., Km]
   table2: list of lists [L1, L2, ..., Ln]
-
   Returns a list of the contatenation of all possible pairs of lists, in the 
   order [K1 + L1, K1 + L2, ..., K1 + Ln, K2 + L1, ..., K2 + Ln, ..., Km + Ln]
-
   If at least one of 'table1' and 'table2' is empty, their Cartesian product
   does not contain any lists.
-
 > (cartesian-helper '((1 4) (2 10)) '((3 4 5) (2)))
 '((1 4 3 4 5) (1 4 2) (2 10 3 4 5) (2 10 2))
 |#
@@ -243,12 +232,10 @@ A function 'replace-attr' that takes:
 #|
 (cartesian-product table1 table2)
   table1, table2: lists of lists in the table format specified by the assignment
-
   Returns a list of the following form:
       Head: concatenation of the attributes of table1 and table2, in that order
       Tail: cartesian product of the tuples of table1 and table2, in the form:
             (table1 data, table2 data)
-
 > (cartesian-product '(("A" "B") (1 2) (3 4)) '(("C") (5)))
 '(("A" "B" "C") (1 2 5) (3 4 5))
 |#
@@ -261,12 +248,10 @@ A function 'replace-attr' that takes:
 #|
 (multi-cartesian table-list)
   table-list: list of (lists of lists in the table format specified by the assignment)
-
   Returns a list of the following form:
       Head: concatenation of the attributes of all the tables in table-list,
             in order of appearance, renaming attributes that are shared between tables.
       Tail: cartesian product of the tuples of all the tables in table-list.
-
 > (multi-cartesian (list '(("A" "B") (1 2) (3 4)) '(("C") (5)) '(("D") (6))))
 '(("A" "B" "C" "D") (1 2 5 6) (3 4 5 6))
 |#
@@ -279,9 +264,7 @@ A function 'replace-attr' that takes:
 #|
 (same-attribute-names tables)
      tables: list of tables in the format specified by the assignment
-
      Returns a list of attributes that appear in more than one table in tables.
-
 > (same-attribute-names (list '(("A" "C") (1 2)) '(("A" "B" "C") (4 5 6))))
 '("A" "C")
 > (same-attribute-names (list '(("A" "C") (1 2)) '(("A" "B" "C") (4 5 6)) '(("B" "D") (3 4))))
@@ -299,9 +282,7 @@ A function 'replace-attr' that takes:
      table: a table in the format specified by the assignment
      original-name: the attribute to be renamed
      new-name: the new name of the attribute to be renamed
-
      Returns a new table with attribute with name original-name renamed to new-name.
-
 > (rename-attribute '(("A" "C") (1 2)) "A" "Apples")
 '(("Apples" "C") (1 2))
 |#
@@ -318,9 +299,7 @@ A function 'replace-attr' that takes:
      table: a table in the format specified by the assignment
      original-name: the attributes to be renamed
      new-name: the new name of the attributes to be renamed (in the same order as original-name)
-
      Returns a new table with attribute with original-names renamed to new-names.
-
 > (rename-attributes '(("A" "C") (1 2)) '("A" "C") '("Apples" "Cranberries"))
 '(("Apples" "Cranberries") (1 2))
 |#
@@ -345,12 +324,13 @@ A function 'replace-attr' that takes:
   (syntax-rules ()
     ; The recursive step, when given a compound expression
     [(replace (expr ...) table)
-     ; Change this!
-     (void)]
-    ; The base case, when given just an atom. This is easier!
+     (list (replace expr table) ... )]
+
+    ; The base case, when given just an atom
     [(replace atom table)
-     ; Change this!
-     ()]))
+     (replace-attr
+                  atom
+                  (attributes table))]))
 
 ; Start of SQL-like syntax macros
 (define-syntax FROM
@@ -374,20 +354,21 @@ A function 'replace-attr' that takes:
 
 (define-syntax SELECT
   (syntax-rules (FROM WHERE ORDER BY)
-    ; SELECT FROM (Basic Query)
-    [(SELECT <attr-lst> FROM <tables> ...)
-     (let ([resulting-table (FROM <tables> ...)])
-       (cond [(list? <attr-lst>) (get-subtable
-                                              <attr-lst>
-                                              resulting-table)]
-             [else (get-subtable
-                                (attributes resulting-table)
-                                resulting-table)]))]
+
+    ; SELECT FROM WHERE ORDER BY (Filtered then Sorted Basic Query)
+    [(SELECT <attr-lst> FROM <tables> ... WHERE <cond> ORDER BY <expr>)
+     (let ([table-to-sort] (SELECT <attr-lst> FROM <tables> ... WHERE <cond>))
+       (cons (attributes table-to-sort)
+             (sort
+                  <
+                  (tuples table-to-sort)
+                  #:key (replace <expr>))))]
+
     ; SELECT FROM WHERE (Filtered Basic Query)
     [(SELECT <attr-lst> FROM <tables> ... WHERE <cond>)
      (let ([table-to-filter (SELECT <attr-lst> FROM <tables> ...)])
-       (let ([filter-formula (replace <cond>)])
-         (tups-satisfying filter-formula table-to-filter)))]
+       (let ([filter-formula (replace <cond> table-to-filter)])
+         <cond>))]
 
     ; SELECT FROM ORDER BY (Sorted Basic Query)
     [(SELECT <attr-lst> FROM <tables> ... ORDER BY <expr>)
@@ -398,11 +379,9 @@ A function 'replace-attr' that takes:
                   (tuples table-to-sort)
                   #:key (replace <expr>))))]
 
-    ; SELECT FROM WHERE ORDER BY (Filtered then Sorted Basic Query)
-    [(SELECT <attr-lst> FROM <tables> ... WHERE <cond> ORDER BY <expr>)
-     (let ([table-to-sort] (SELECT <attr-lst> FROM <tables> ... WHERE <cond>))
-       (cons (attributes table-to-sort)
-             (sort
-                  <
-                  (tuples table-to-sort)
-                  #:key (replace <expr>))))]))
+    ; SELECT FROM (Basic Query)
+    [(SELECT <attr-lst> FROM <tables> ...)
+     (let ([resulting-table (FROM <tables> ...)])
+       (get-subtable
+                    <attr-lst>
+                    resulting-table))]))
