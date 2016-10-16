@@ -368,7 +368,9 @@ A function 'replace-attr' that takes:
     [(SELECT <attr-lst> FROM <tables> ... WHERE <cond>)
      (let ([table-to-filter (SELECT <attr-lst> FROM <tables> ...)])
        (let ([filter-formula (replace <cond> table-to-filter)])
-         <cond>))]
+         (tups-satisfying
+                        filter-formula
+                        table-to-filter)))]
 
     ; SELECT FROM ORDER BY (Sorted Basic Query)
     [(SELECT <attr-lst> FROM <tables> ... ORDER BY <expr>)
