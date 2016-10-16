@@ -5,6 +5,21 @@ Brendan Neal, nealbre1, 1001160226
 |#
 #lang racket
 
+; DEFINITIONS FOR TESTING - REMOVE BEFORE HANDING IN
+(define Person
+  '(("Name" "Age" "LikesChocolate") 
+    ("David" 20 #t) 
+    ("Jen" 30 #t) 
+    ("Paul" 100 #f)))
+
+(define Teaching
+  '(("Name" "Course")
+    ("David" "CSC324")
+    ("Paul" "CSC108")
+    ("David" "CSC343")
+    ))
+; DEFINITIONS FOR TESTING - REMOVE BEFORE HANDING IN
+
 ; Function versions for common syntactic forms.
 ; *Use these in your queries instead of the syntactic forms!!!*
 ; (define (And x y) (and x y))
