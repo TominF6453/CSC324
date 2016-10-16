@@ -374,6 +374,7 @@ A function 'replace-attr' that takes:
 
 (define-syntax SELECT
   (syntax-rules (FROM WHERE ORDER BY)
+    ; SELECT FROM (Basic Query)
     [(SELECT <attr-lst> FROM <tables> ...)
      (let ([resulting-table (FROM <tables> ...)])
        (cond [(list? <attr-lst>) (get-subtable
@@ -382,12 +383,13 @@ A function 'replace-attr' that takes:
              [else (get-subtable
                                 (attributes resulting-table)
                                 resulting-table)]))]
-
+    ; SELECT FROM WHERE (Filtered Basic Query)
     [(SELECT <attr-lst> FROM <tables> ... WHERE <cond>)
      (let ([table-to-filter (SELECT <attr-lst> FROM <tables> ...)])
        (let ([filter-formula (replace <cond>)])
          (tups-satisfying filter-formula table-to-filter)))]
 
+    ; SELECT FROM ORDER BY (Sorted Basic Query)
     [(SELECT <attr-lst> FROM <tables> ... ORDER BY <expr>)
      (let ([table-to-sort] (SELECT <attr-lst> FROM <tables> ...))
        (cons (attributes table-to-sort)
@@ -396,6 +398,7 @@ A function 'replace-attr' that takes:
                   (tuples table-to-sort)
                   #:key (replace <expr>))))]
 
+    ; SELECT FROM WHERE ORDER BY (Filtered then Sorted Basic Query)
     [(SELECT <attr-lst> FROM <tables> ... WHERE <cond> ORDER BY <expr>)
      (let ([table-to-sort] (SELECT <attr-lst> FROM <tables> ... WHERE <cond>))
        (cons (attributes table-to-sort)
