@@ -5,6 +5,9 @@ Brendan Neal, nealbre1, 1001160226
 |#
 #lang racket
 
+; Namespace definition required for eval
+(define ns (make-base-namespace))
+
 ; DEFINITIONS FOR TESTING - REMOVE BEFORE HANDING IN
 (define Person
   '(("Name" "Age" "LikesChocolate") 
@@ -194,6 +197,21 @@ Brendan Neal, nealbre1, 1001160226
           (filter f (tuples table))))
 
 #|
+(feed-tups func_list tup)
+  - func_list: a list of procedures which take a tuple
+  - tup: the tuple to pass into each procedure
+  Returns a useable listed procedure from the output of replace
+|#
+(define (feed-tups func_list tup)
+  (cond [(empty? func_list) func_list] ; If the function list is empty, return empty list.
+        [(not (list? func_list)) ; Passing in a single attribute as the procedure
+         (feed-tups (list func_list) tup)]
+        [(list? (first func_list)) ; If the first procedure is another list, the procedure is nested.
+         (cons (feed-tups (first func_list) tup) (feed-tups (rest func_list) tup))]
+        [else ; If not, feed the first element a tuple and recursively the rest of the elements, construct a list of tuple'd procedures.
+         (cons ((first func_list) tup) (feed-tups (rest func_list) tup))]))
+
+#|
 (index-of x lst)
   - x: some object
   - lst: a list of objects
@@ -343,9 +361,7 @@ A function 'replace-attr' that takes:
 
     ; The base case, when given just an atom
     [(replace atom table)
-     (replace-attr
-                  atom
-                  (attributes table))]))
+     (replace-attr atom (attributes table))]))
 
 ; Start of SQL-like syntax macros
 (define-syntax FROM
@@ -382,19 +398,18 @@ A function 'replace-attr' that takes:
     ; SELECT FROM WHERE (Filtered Basic Query)
     [(SELECT <attr-lst> FROM <tables> ... WHERE <cond>)
      (let ([table-to-filter (SELECT <attr-lst> FROM <tables> ...)])
-       (let ([filter-formula (replace <cond> table-to-filter)])
-         (tups-satisfying
-                        filter-formula
-                        table-to-filter)))]
+       (tups-satisfying (λ(tuple)
+                          (eval (feed-tups (replace <cond> table-to-filter) tuple) ns))
+                        table-to-filter))]
 
     ; SELECT FROM ORDER BY (Sorted Basic Query)
     [(SELECT <attr-lst> FROM <tables> ... ORDER BY <expr>)
-     (let ([table-to-sort] (SELECT <attr-lst> FROM <tables> ...))
+     (let ([table-to-sort (SELECT <attr-lst> FROM <tables> ...)])
        (cons (attributes table-to-sort)
              (sort
                   <
                   (tuples table-to-sort)
-                  #:key (replace <expr>))))]
+                  #:key (replace <expr> <attr-lst>))))]
 
     ; SELECT FROM (Basic Query)
     [(SELECT <attr-lst> FROM <tables> ...)
