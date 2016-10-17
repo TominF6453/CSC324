@@ -33,6 +33,33 @@
     ("David" "CSC343")
     ))
 
+(define NoAttrTable
+  '(()
+    ()
+    ()
+    ()
+    ))
+
+(define OneAttrTable
+  '(("Attr1")
+    (1)
+    (2)
+    (3)
+    ))
+
+(define TableWithDuplicates
+  '(("Student" "ID")
+    ("Alice" 1001)
+    ("Alice" 1001)
+    ("Bob" 1002)
+    ("Charlie" 1003)
+    ))
+
+(define EmptyTable
+  '(("Apples" "Butter")
+    ))
+
+
 
 #|
 All tests go below. 
@@ -141,6 +168,42 @@ and your TAs will appreciate it!
    (3 "Hi" 10 #t "Jen" 30 #t)
    (3 "Hi" 10 #t "Paul" 100 #f)))
 
+; Select an attribute that does not exist from an attributeless table
+(test (SELECT '("A") FROM NoAttrTable)
+      '(("A")
+        ("Attribute does not exist!")
+        ("Attribute does not exist!")
+        ("Attribute does not exist!")))
+
+; Select all from an attributeless table
+(test (SELECT * FROM NoAttrTable)
+      '(()
+        ()
+        ()
+        ()))
+
+; Select all from a table with duplicates
+(test (SELECT * FROM TableWithDuplicates)
+      '(("Student" "ID")
+        ("Alice" 1001)
+        ("Alice" 1001)
+        ("Bob" 1002)
+        ("Charlie" 1003)))
+
+; Select all from a table with one attribute
+(test (SELECT * FROM OneAttrTable)
+      '(("Attr1")
+        (1)
+        (2)
+        (3)))
+
+; Select all from a table crossed with an empty table
+(test (SELECT * FROM [EmptyTable "E"] [Teaching "T"])
+      '(("Apples" "Butter" "Name" "Course")))
+
+; Select all from the empty table crossed with itself
+(test (SELECT * FROM [EmptyTable "E1"] [EmptyTable "E2"])
+      '(("E1.Apples" "E1.Butter" "E2.Apples" "E2.Butter")))
 
 ; ---- WHERE ----
 ; Attribute as condition, select all
@@ -180,6 +243,12 @@ and your TAs will appreciate it!
         WHERE #t)
       Person)
 
+; Constant false condition
+(test (SELECT *
+        FROM Person
+        WHERE #f)
+      '(("Name" "Age" "LikesChocolate")))
+
 ; Constant false compound condition
 (test (SELECT *
         FROM Person
@@ -218,6 +287,12 @@ and your TAs will appreciate it!
         ("David" #t 30 "CSC324")
         ("Paul" #f 30 "CSC108")
         ("David" #t 30 "CSC343")))
+
+; Compound condition on empty table crossed with itself
+(test (SELECT '("E1.Apples" "E2.Butter")
+        FROM [EmptyTable "E1"] [EmptyTable "E2"]
+        WHERE (And "E1.Apples" (equal? "E1.Butter" "E2.Butter")))
+      '(("E1.Apples" "E2.Butter")))
 
 ; ---- ORDER BY ----
 ; Order by attribute

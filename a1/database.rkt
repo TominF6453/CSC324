@@ -8,21 +8,6 @@ Brendan Neal, nealbre1, 1001160226
 ; Namespace definition required for eval
 (define ns (make-base-namespace))
 
-; DEFINITIONS FOR TESTING - REMOVE BEFORE HANDING IN
-(define Person
-  '(("Name" "Age" "LikesChocolate") 
-    ("David" 20 #t) 
-    ("Jen" 30 #t) 
-    ("Paul" 100 #f)))
-
-(define Teaching
-  '(("Name" "Course")
-    ("David" "CSC324")
-    ("Paul" "CSC108")
-    ("David" "CSC343")
-    ))
-; DEFINITIONS FOR TESTING - REMOVE BEFORE HANDING IN
-
 ; Function versions for common syntactic forms.
 ; *Use these in your queries instead of the syntactic forms!!!*
 ; (define (And x y) (and x y))
@@ -48,27 +33,6 @@ Brendan Neal, nealbre1, 1001160226
 (define (no-attr-error) "Attribute does not exist!")
 
 ; Generic helper functions
-#|
-(contains item lst)
-   item: an object
-   lst: a list of objects the same type as item
-   Returns a boolean value indicating whether or not item is in lst.
-> (contains 1 '(1 2 3))
-#t
-> (contains 1 '())
-#f
-> (contains 1 '(2 3))
-#f
-> (contains 1 '(2))
-#f
-> (contains 1 '(1))
-#t
-|#
-(define (contains item lst)
-  (cond [(null? lst) #f]
-        [else (or (equal? (car lst) item)
-                  (contains item (cdr lst)))]))
-
 
 #|
 (number-of item lst)
@@ -141,7 +105,7 @@ Brendan Neal, nealbre1, 1001160226
 |#
 (define (get-value attribute-template target-attribute tup)
   (let ([att-index (index-of target-attribute attribute-template)])
-    (cond [(equal? att-index -1) no-attr-error]
+    (cond [(equal? att-index -1) (no-attr-error)]
           [else (list-ref tup att-index)])))
 
 #|
@@ -206,10 +170,10 @@ Brendan Neal, nealbre1, 1001160226
   (cond [(empty? func_list) func_list] ; If the function list is empty, return empty list.
         [(not (list? func_list)) ; Passing in a single attribute as the procedure
          (feed-tups (list func_list) tup)]
-        [(list? (first func_list)) ; If the first procedure is another list, the procedure is nested.
-         (cons (feed-tups (first func_list) tup) (feed-tups (rest func_list) tup))]
+        [(list? (head func_list)) ; If the first procedure is another list, the procedure is nested.
+         (cons (feed-tups (head func_list) tup) (feed-tups (tail func_list) tup))]
         [else ; If not, feed the first element a tuple and recursively the rest of the elements, construct a list of tuple'd procedures.
-         (cons ((first func_list) tup) (feed-tups (rest func_list) tup))]))
+         (cons ((head func_list) tup) (feed-tups (tail func_list) tup))]))
 
 #|
 (index-of x lst)
@@ -357,7 +321,7 @@ A function 'replace-attr' that takes:
     ; The recursive step, when given a compound expression
     [(replace (expr ...) table)
      (list (replace expr table) ... )]
-
+    
     ; The base case, when given just an atom
     [(replace atom table)
      (replace-attr atom (attributes table))]))
@@ -397,27 +361,27 @@ A function 'replace-attr' that takes:
          (cond [(not (list? pred))
                 (SELECT <attr-lst> FROM (tups-satisfying pred table-to-filter))]
                [else
-                (SELECT <attr-lst> FROM (tups-satisfying (λ(tuple)
-                                   (eval (feed-tups (replace <cond> table-to-filter) tuple) ns))
-                                 table-to-filter))])))]
-
+                (SELECT <attr-lst> FROM (tups-satisfying
+                                         (λ(tuple) (eval (feed-tups (replace <cond> table-to-filter) tuple) ns))
+                                         table-to-filter))])))]
+    
     ; SELECT FROM ORDER BY (Sorted Basic Query)
     [(SELECT <attr-lst> FROM <tables> ... ORDER BY <expr>)
      (let ([table-to-sort (SELECT * FROM <tables> ...)])
        (let ([fxn-lst (replace <expr> table-to-sort)])
          (cond [(not (list? fxn-lst)) ; Just a singular attribute
                 (SELECT <attr-lst> FROM (cons (attributes table-to-sort)
-                      (sort
-                       (tuples table-to-sort)
-                       > ;order of sorting is decreasing
-                       #:key (λ(tuple) (fxn-lst tuple)))))]
+                                              (sort
+                                               (tuples table-to-sort)
+                                               > ;order of sorting is decreasing
+                                               #:key (λ(tuple) (fxn-lst tuple)))))]
                [else ; A compound expression
                 (let ([key-retriever (λ(tuple) (eval (feed-tups fxn-lst tuple) ns))]) ; Build the function to sort on
-                   (SELECT <attr-lst> FROM (cons (attributes table-to-sort)
-                         (sort
-                          (tuples table-to-sort)
-                          > ;order of sorting is decreasing
-                          #:key (λ(tup) (key-retriever tup))))))])))]
+                  (SELECT <attr-lst> FROM (cons (attributes table-to-sort)
+                                                (sort
+                                                 (tuples table-to-sort)
+                                                 > ;order of sorting is decreasing
+                                                 #:key (λ(tup) (key-retriever tup))))))])))]
     
     ; SELECT FROM (Basic Query)
     [(SELECT <attr-lst> FROM <tables> ...)
