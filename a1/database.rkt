@@ -356,13 +356,8 @@ A function 'replace-attr' that takes:
   (syntax-rules ()
     ; The recursive step, when given a compound expression
     [(replace (expr ...) table)
-<<<<<<< HEAD
      (list (replace expr table) ... )]
-    
-=======
-     (list (replace expr table) ...)]
 
->>>>>>> 644cf649102befaea85f39668e398d8b84246aaf
     ; The base case, when given just an atom
     [(replace atom table)
      (replace-attr atom (attributes table))]))
@@ -402,7 +397,6 @@ A function 'replace-attr' that takes:
     ; SELECT FROM WHERE (Filtered Basic Query)
     [(SELECT <attr-lst> FROM <tables> ... WHERE <cond>)
      (let ([table-to-filter (SELECT <attr-lst> FROM <tables> ...)])
-<<<<<<< HEAD
        (let ([pred (replace <cond> (SELECT <attr-lst> FROM <tables> ...))])
          (cond [(not (list? pred))
                 (tups-satisfying pred table-to-filter)]
@@ -426,25 +420,3 @@ A function 'replace-attr' that takes:
    (get-subtable
     <attr-lst>
     resulting-table))]))
-=======
-       (tups-satisfying (λ(tuple)
-                          (eval (feed-tups (replace <cond> table-to-filter) tuple) ns))
-                        table-to-filter))]
-
-    ; SELECT FROM ORDER BY (Sorted Basic Query)
-    [(SELECT <attr-lst> FROM <tables> ... ORDER BY <expr>)
-     (let ([table-to-sort (SELECT <attr-lst> FROM <tables> ...)])
-       (let ([key-retriever (λ(tuple) (eval (feed-tups (replace <expr> table-to-sort) tuple) ns))])
-         (cons (attributes table-to-sort)
-               (sort
-                    (tuples table-to-sort)
-                    >
-                    #:key (λ(tup) (key-retriever tup))))))]
-
-    ; SELECT FROM (Basic Query)
-    [(SELECT <attr-lst> FROM <tables> ...)
-     (let ([resulting-table (FROM <tables> ...)])
-       (get-subtable
-                    <attr-lst>
-                    resulting-table))]))
->>>>>>> 644cf649102befaea85f39668e398d8b84246aaf
