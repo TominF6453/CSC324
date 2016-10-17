@@ -168,8 +168,6 @@ Brendan Neal, nealbre1, 1001160226
 |#
 (define (feed-tups func_list tup)
   (cond [(empty? func_list) func_list] ; If the function list is empty, return empty list.
-        [(not (list? func_list)) ; Passing in a single attribute as the procedure
-         (feed-tups (list func_list) tup)]
         [(list? (head func_list)) ; If the first procedure is another list, the procedure is nested.
          (cons (feed-tups (head func_list) tup) (feed-tups (tail func_list) tup))]
         [else ; If not, feed the first element a tuple and recursively the rest of the elements, construct a list of tuple'd procedures.
@@ -203,9 +201,7 @@ A function 'replace-attr' that takes:
 |#
 (define (replace-attr x attr-lst)
   (cond [(not (member x attr-lst)) (λ(tup) x)]
-        [else (λ(tup) (list-ref
-                       tup
-                       (index-of x attr-lst)))]))
+        [else (λ(tup) (list-ref tup (index-of x attr-lst)))]))
 
 ; Cartesian Product Functions - Used for FROM clause (multiple tables)
 #|
@@ -241,7 +237,7 @@ A function 'replace-attr' that takes:
          (cartesian-helper (tuples table1)
                            (tuples table2))))
 
-; Use the multi-cartesian on the list of tables in FROM - need to implement column renaming
+; Use the multi-cartesian on the list of tables in FROM
 #|
 (multi-cartesian table-list)
   table-list: list of (lists of lists in the table format specified by the assignment)
