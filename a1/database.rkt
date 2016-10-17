@@ -40,8 +40,8 @@ Brendan Neal, nealbre1, 1001160226
 
 (define-syntax If
   (syntax-rules ()
-  ((If a b c)
-  (if a b c))))
+    ((If a b c)
+     (if a b c))))
 
 (define (tail lst) (rest lst))
 (define (head lst) (first lst))
@@ -156,13 +156,13 @@ Brendan Neal, nealbre1, 1001160226
 (define (get-values attribute-template target-attributes tup)
   (cond [(null? target-attributes) empty]
         [else (cons (get-value
-                              attribute-template
-                              (head target-attributes)
-                              tup)
+                     attribute-template
+                     (head target-attributes)
+                     tup)
                     (get-values
-                               attribute-template
-                               (tail target-attributes)
-                               tup))]))
+                     attribute-template
+                     (tail target-attributes)
+                     tup))]))
 
 #|
 (get-subtable target-attributes table): 
@@ -173,15 +173,15 @@ Brendan Neal, nealbre1, 1001160226
 |#
 (define (get-subtable target-attributes table)
   (cond [(equal? * target-attributes) (get-subtable
-                                                   (attributes table)
-                                                   table)]
+                                       (attributes table)
+                                       table)]
         [else (cons
-                   target-attributes
-                   (map (λ(tup) (get-values
-                                 (attributes table)
-                                 target-attributes
-                                 tup))
-                        (tuples table)))]))
+               target-attributes
+               (map (λ(tup) (get-values
+                             (attributes table)
+                             target-attributes
+                             tup))
+                    (tuples table)))]))
 
 #|
 (tups-satisfying f table)
@@ -240,8 +240,8 @@ A function 'replace-attr' that takes:
 (define (replace-attr x attr-lst)
   (cond [(not (member x attr-lst)) (λ(tup) x)]
         [else (λ(tup) (list-ref
-                               tup
-                               (index-of x attr-lst)))]))
+                       tup
+                       (index-of x attr-lst)))]))
 
 ; Cartesian Product Functions - Used for FROM clause (multiple tables)
 #|
@@ -305,10 +305,10 @@ A function 'replace-attr' that takes:
 |#
 (define (same-attribute-names tables)
   (let ([attribute-list (map attributes tables)])
-        (let ([merged-attributes (apply append attribute-list)])
-          (remove-duplicates (filter
-                                    (λ(attr) (> (number-of attr merged-attributes) 1))
-                                     merged-attributes)))))
+    (let ([merged-attributes (apply append attribute-list)])
+      (remove-duplicates (filter
+                          (λ(attr) (> (number-of attr merged-attributes) 1))
+                          merged-attributes)))))
 
 #|
 (rename-attribute table original-name new-name)
@@ -341,13 +341,13 @@ A function 'replace-attr' that takes:
          "new-names must be the same length as original-names"]
         [(and (empty? original-names) (empty? new-names)) table]
         [else (let ([first-stage (rename-attribute
-                                                  table
-                                                  (head original-names)
-                                                  (head new-names))])
+                                  table
+                                  (head original-names)
+                                  (head new-names))])
                 (rename-attributes
-                                  first-stage
-                                  (tail original-names)
-                                  (tail new-names)))]))
+                 first-stage
+                 (tail original-names)
+                 (tail new-names)))]))
 
 
 ; Starter for Part 3; feel free to ignore!
@@ -358,7 +358,7 @@ A function 'replace-attr' that takes:
     ; The recursive step, when given a compound expression
     [(replace (expr ...) table)
      (list (replace expr table) ... )]
-
+    
     ; The base case, when given just an atom
     [(replace atom table)
      (replace-attr atom (attributes table))]))
@@ -376,44 +376,48 @@ A function 'replace-attr' that takes:
        ; Use the rename attributes method to ONLY rename attributes that are common
        ; between the two tables (using dot notation)
        (let ([tables-to-cross (list
-                                    (rename-attributes
-                                                      table
-                                                      common-attributes
-                                                      (map (λ(x) (string-append table-name "." x))
-                                                            common-attributes)) ... )])
+                               (rename-attributes
+                                table
+                                common-attributes
+                                (map (λ(x) (string-append table-name "." x))
+                                     common-attributes)) ... )])
          (multi-cartesian tables-to-cross)))]))
 
 (define-syntax SELECT
   (syntax-rules (FROM WHERE ORDER BY)
-
+    
     ; SELECT FROM WHERE ORDER BY (Filtered then Sorted Basic Query)
     [(SELECT <attr-lst> FROM <tables> ... WHERE <cond> ORDER BY <expr>)
      (let ([table-to-sort] (SELECT <attr-lst> FROM <tables> ... WHERE <cond>))
        (cons (attributes table-to-sort)
              (sort
-                  <
-                  (tuples table-to-sort)
-                  #:key (replace <expr>))))]
-
+              <
+              (tuples table-to-sort)
+              #:key (replace <expr>))))]
+    
     ; SELECT FROM WHERE (Filtered Basic Query)
     [(SELECT <attr-lst> FROM <tables> ... WHERE <cond>)
      (let ([table-to-filter (SELECT <attr-lst> FROM <tables> ...)])
-       (tups-satisfying (λ(tuple)
-                          (eval (feed-tups (replace <cond> table-to-filter) tuple) ns))
-                        table-to-filter))]
+       (let ([pred (replace <cond> (SELECT <attr-lst> FROM <tables> ...))])
+         (cond [(not (list? pred))
+                (tups-satisfying pred table-to-filter)]
+               [else
+                (tups-satisfying (λ(tuple)
+                                   (eval (feed-tups (replace <cond> table-to-filter) tuple) ns))
+                                 table-to-filter)])))]
 
-    ; SELECT FROM ORDER BY (Sorted Basic Query)
-    [(SELECT <attr-lst> FROM <tables> ... ORDER BY <expr>)
-     (let ([table-to-sort (SELECT <attr-lst> FROM <tables> ...)])
-       (cons (attributes table-to-sort)
-             (sort
-                  <
-                  (tuples table-to-sort)
-                  #:key (replace <expr> <attr-lst>))))]
+; SELECT FROM ORDER BY (Sorted Basic Query)
+[(SELECT <attr-lst> FROM <tables> ... ORDER BY <expr>)
+ (let ([table-to-sort (SELECT <attr-lst> FROM <tables> ...)])
+   (cons (attributes table-to-sort)
+         (sort
+          <
+          (tuples table-to-sort)
+          #:key (replace <expr> <attr-lst>))))]
 
-    ; SELECT FROM (Basic Query)
-    [(SELECT <attr-lst> FROM <tables> ...)
-     (let ([resulting-table (FROM <tables> ...)])
-       (get-subtable
-                    <attr-lst>
-                    resulting-table))]))
+; SELECT FROM (Basic Query)
+[(SELECT <attr-lst> FROM <tables> ...)
+ (let ([resulting-table (FROM <tables> ...)])
+   (get-subtable
+    <attr-lst>
+    resulting-table))]))
