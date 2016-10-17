@@ -397,7 +397,7 @@ A function 'replace-attr' that takes:
     ; SELECT FROM WHERE (Filtered Basic Query)
     [(SELECT <attr-lst> FROM <tables> ... WHERE <cond>)
      (let ([table-to-filter (SELECT <attr-lst> FROM <tables> ...)])
-       (let ([pred (replace <cond> (SELECT <attr-lst> FROM <tables> ...))])
+       (let ([pred (replace <cond> table-to-filter)])
          (cond [(not (list? pred))
                 (tups-satisfying pred table-to-filter)]
                [else
@@ -405,18 +405,27 @@ A function 'replace-attr' that takes:
                                    (eval (feed-tups (replace <cond> table-to-filter) tuple) ns))
                                  table-to-filter)])))]
 
-; SELECT FROM ORDER BY (Sorted Basic Query)
-[(SELECT <attr-lst> FROM <tables> ... ORDER BY <expr>)
- (let ([table-to-sort (SELECT <attr-lst> FROM <tables> ...)])
-   (cons (attributes table-to-sort)
-         (sort
-          <
-          (tuples table-to-sort)
-          #:key (replace <expr> <attr-lst>))))]
-
-; SELECT FROM (Basic Query)
-[(SELECT <attr-lst> FROM <tables> ...)
- (let ([resulting-table (FROM <tables> ...)])
-   (get-subtable
-    <attr-lst>
-    resulting-table))]))
+    ; SELECT FROM ORDER BY (Sorted Basic Query)
+    [(SELECT <attr-lst> FROM <tables> ... ORDER BY <expr>)
+     (let ([table-to-sort (SELECT <attr-lst> FROM <tables> ...)])
+       (let ([fxn-lst (replace <expr> table-to-sort)])
+         (cond [(not (list? fxn-lst)) ; Just a singular attribute
+                (cons (attributes table-to-sort)
+                      (sort
+                       (tuples table-to-sort)
+                       > ;order of sorting is decreasing
+                       #:key (λ(tuple) (fxn-lst tuple))))]
+               [else ; A compound expression
+                (let ([key-retriever (λ(tuple) (eval (feed-tups fxn-lst tuple) ns))]) ; Build the function to sort on
+                   (cons (attributes table-to-sort)
+                         (sort
+                          (tuples table-to-sort)
+                          > ;order of sorting is decreasing
+                          #:key (λ(tup) (key-retriever tup)))))])))]
+    
+    ; SELECT FROM (Basic Query)
+    [(SELECT <attr-lst> FROM <tables> ...)
+     (let ([resulting-table (FROM <tables> ...)])
+       (get-subtable
+        <attr-lst>
+        resulting-table))]))
