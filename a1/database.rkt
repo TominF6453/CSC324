@@ -387,12 +387,8 @@ A function 'replace-attr' that takes:
     
     ; SELECT FROM WHERE ORDER BY (Filtered then Sorted Basic Query)
     [(SELECT <attr-lst> FROM <tables> ... WHERE <cond> ORDER BY <expr>)
-     (let ([table-to-sort (SELECT <attr-lst> FROM <tables> ... WHERE <cond>)])
-       (cons (attributes table-to-sort)
-             (sort
-              <
-              (tuples table-to-sort)
-              #:key (replace <expr>))))]
+     (let ([table-to-sort (SELECT * FROM <tables> ... WHERE <cond>)])
+       (SELECT <attr-lst> FROM table-to-sort ORDER BY <expr>))]
     
     ; SELECT FROM WHERE (Filtered Basic Query)
     [(SELECT <attr-lst> FROM <tables> ... WHERE <cond>)
@@ -407,21 +403,21 @@ A function 'replace-attr' that takes:
 
     ; SELECT FROM ORDER BY (Sorted Basic Query)
     [(SELECT <attr-lst> FROM <tables> ... ORDER BY <expr>)
-     (let ([table-to-sort (SELECT <attr-lst> FROM <tables> ...)])
+     (let ([table-to-sort (SELECT * FROM <tables> ...)])
        (let ([fxn-lst (replace <expr> table-to-sort)])
          (cond [(not (list? fxn-lst)) ; Just a singular attribute
-                (cons (attributes table-to-sort)
+                (SELECT <attr-lst> FROM (cons (attributes table-to-sort)
                       (sort
                        (tuples table-to-sort)
                        > ;order of sorting is decreasing
-                       #:key (λ(tuple) (fxn-lst tuple))))]
+                       #:key (λ(tuple) (fxn-lst tuple)))))]
                [else ; A compound expression
                 (let ([key-retriever (λ(tuple) (eval (feed-tups fxn-lst tuple) ns))]) ; Build the function to sort on
-                   (cons (attributes table-to-sort)
+                   (SELECT <attr-lst> FROM (cons (attributes table-to-sort)
                          (sort
                           (tuples table-to-sort)
                           > ;order of sorting is decreasing
-                          #:key (λ(tup) (key-retriever tup)))))])))]
+                          #:key (λ(tup) (key-retriever tup))))))])))]
     
     ; SELECT FROM (Basic Query)
     [(SELECT <attr-lst> FROM <tables> ...)
