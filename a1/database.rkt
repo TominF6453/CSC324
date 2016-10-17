@@ -175,8 +175,8 @@ Brendan Neal, nealbre1, 1001160226
 (define (tups-satisfying f table)
   ; Want the head of the list to be the attributes of the table
   ; Want the tail of the list to be the satisying tuples
-  (cons   (attributes table)
-          (filter f (tuples table))))
+  (cons (attributes table)
+        (filter f (tuples table))))
 
 #|
 (index-of x lst)
@@ -295,7 +295,7 @@ A function 'replace-attr' that takes:
             (tuples table)))))
 
 #|
-(rename-attributs table original-names new-names)
+(rename-attributes table original-names new-names)
      table: a table in the format specified by the assignment
      original-name: the attributes to be renamed
      new-name: the new name of the attributes to be renamed (in the same order as original-name)
@@ -316,21 +316,18 @@ A function 'replace-attr' that takes:
                                   (tail original-names)
                                   (tail new-names)))]))
 
-
 ; Starter for Part 3; feel free to ignore!
 
-; What should this macro do?
+; Returns list of functions
 (define-syntax replace
   (syntax-rules ()
     ; The recursive step, when given a compound expression
     [(replace (expr ...) table)
-     (list (replace expr table) ... )]
+     (list (replace expr table) ...)]
 
     ; The base case, when given just an atom
     [(replace atom table)
-     (replace-attr
-                  atom
-                  (attributes table))]))
+     (replace-attr atom (attributes table))]))
 
 ; Start of SQL-like syntax macros
 (define-syntax FROM
@@ -372,14 +369,29 @@ A function 'replace-attr' that takes:
                         filter-formula
                         table-to-filter)))]
 
-    ; SELECT FROM ORDER BY (Sorted Basic Query)
-    [(SELECT <attr-lst> FROM <tables> ... ORDER BY <expr>)
-     (let ([table-to-sort] (SELECT <attr-lst> FROM <tables> ...))
-       (cons (attributes table-to-sort)
-             (sort
-                  <
-                  (tuples table-to-sort)
-                  #:key (replace <expr>))))]
+    ; SELECT FROM ORDER BY (Sorted Basic Query)(for order-by functions)
+    [(SELECT <attr-lst> FROM <tables> ... ORDER BY (<function> <key>))
+     (let ([table-to-sort (SELECT <attr-lst> FROM <tables> ...)])
+       (let ([get-target-attr (replace-attr
+                                          <key>
+                                          (attributes table-to-sort))])
+         (cons (attributes table-to-sort)
+               (sort
+                    (tuples table-to-sort)
+                    > ;order of sorting is decreasing
+                    #:key (λ(tup) (<function> (get-target-attr tup)))))))]
+
+    ; SELECT FROM ORDER BY (Sorted Basic Query)(for order-by with an attribute)
+    [(SELECT <attr-lst> FROM <tables> ... ORDER BY <key>)
+     (let ([table-to-sort (SELECT <attr-lst> FROM <tables> ...)])
+       (let ([get-target-attr (replace-attr
+                                          <key>
+                                          (attributes table-to-sort))])
+         (cons (attributes table-to-sort)
+               (sort
+                    (tuples table-to-sort)
+                    > ;order of sorting is decreasing
+                    #:key (λ(tup) (get-target-attr tup))))))]
 
     ; SELECT FROM (Basic Query)
     [(SELECT <attr-lst> FROM <tables> ...)
