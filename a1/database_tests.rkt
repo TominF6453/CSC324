@@ -219,7 +219,6 @@ and your TAs will appreciate it!
         ("Paul" #f 30 "CSC108")
         ("David" #t 30 "CSC343")))
 
-
 ; ---- ORDER BY ----
 ; Order by attribute
 (test (SELECT *

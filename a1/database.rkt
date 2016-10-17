@@ -387,7 +387,7 @@ A function 'replace-attr' that takes:
     
     ; SELECT FROM WHERE ORDER BY (Filtered then Sorted Basic Query)
     [(SELECT <attr-lst> FROM <tables> ... WHERE <cond> ORDER BY <expr>)
-     (let ([table-to-sort] (SELECT <attr-lst> FROM <tables> ... WHERE <cond>))
+     (let ([table-to-sort (SELECT <attr-lst> FROM <tables> ... WHERE <cond>)])
        (cons (attributes table-to-sort)
              (sort
               <
@@ -396,14 +396,14 @@ A function 'replace-attr' that takes:
     
     ; SELECT FROM WHERE (Filtered Basic Query)
     [(SELECT <attr-lst> FROM <tables> ... WHERE <cond>)
-     (let ([table-to-filter (SELECT <attr-lst> FROM <tables> ...)])
+     (let ([table-to-filter (SELECT * FROM <tables> ...)])
        (let ([pred (replace <cond> table-to-filter)])
          (cond [(not (list? pred))
-                (tups-satisfying pred table-to-filter)]
+                (SELECT <attr-lst> FROM (tups-satisfying pred table-to-filter))]
                [else
-                (tups-satisfying (λ(tuple)
+                (SELECT <attr-lst> FROM (tups-satisfying (λ(tuple)
                                    (eval (feed-tups (replace <cond> table-to-filter) tuple) ns))
-                                 table-to-filter)])))]
+                                 table-to-filter))])))]
 
     ; SELECT FROM ORDER BY (Sorted Basic Query)
     [(SELECT <attr-lst> FROM <tables> ... ORDER BY <expr>)
