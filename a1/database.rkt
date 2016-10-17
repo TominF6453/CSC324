@@ -5,6 +5,24 @@ Brendan Neal, nealbre1, 1001160226
 |#
 #lang racket
 
+; Namespace definition required for eval
+(define ns (make-base-namespace))
+
+; DEFINITIONS FOR TESTING - REMOVE BEFORE HANDING IN
+(define Person
+  '(("Name" "Age" "LikesChocolate") 
+    ("David" 20 #t) 
+    ("Jen" 30 #t) 
+    ("Paul" 100 #f)))
+
+(define Teaching
+  '(("Name" "Course")
+    ("David" "CSC324")
+    ("Paul" "CSC108")
+    ("David" "CSC343")
+    ))
+; DEFINITIONS FOR TESTING - REMOVE BEFORE HANDING IN
+
 ; Function versions for common syntactic forms.
 ; *Use these in your queries instead of the syntactic forms!!!*
 ; (define (And x y) (and x y))
@@ -177,6 +195,21 @@ Brendan Neal, nealbre1, 1001160226
   ; Want the tail of the list to be the satisying tuples
   (cons (attributes table)
         (filter f (tuples table))))
+
+#|
+(feed-tups func_list tup)
+  - func_list: a list of procedures which take a tuple
+  - tup: the tuple to pass into each procedure
+  Returns a useable listed procedure from the output of replace
+|#
+(define (feed-tups func_list tup)
+  (cond [(empty? func_list) func_list] ; If the function list is empty, return empty list.
+        [(not (list? func_list)) ; Passing in a single attribute as the procedure
+         (feed-tups (list func_list) tup)]
+        [(list? (first func_list)) ; If the first procedure is another list, the procedure is nested.
+         (cons (feed-tups (first func_list) tup) (feed-tups (rest func_list) tup))]
+        [else ; If not, feed the first element a tuple and recursively the rest of the elements, construct a list of tuple'd procedures.
+         (cons ((first func_list) tup) (feed-tups (rest func_list) tup))]))
 
 #|
 (index-of x lst)
@@ -364,34 +397,19 @@ A function 'replace-attr' that takes:
     ; SELECT FROM WHERE (Filtered Basic Query)
     [(SELECT <attr-lst> FROM <tables> ... WHERE <cond>)
      (let ([table-to-filter (SELECT <attr-lst> FROM <tables> ...)])
-       (let ([filter-formula (replace <cond> table-to-filter)])
-         (tups-satisfying
-                        filter-formula
-                        table-to-filter)))]
+       (tups-satisfying (λ(tuple)
+                          (eval (feed-tups (replace <cond> table-to-filter) tuple) ns))
+                        table-to-filter))]
 
-    ; SELECT FROM ORDER BY (Sorted Basic Query)(for order-by functions)
-    [(SELECT <attr-lst> FROM <tables> ... ORDER BY (<function> <key>))
+    ; SELECT FROM ORDER BY (Sorted Basic Query)
+    [(SELECT <attr-lst> FROM <tables> ... ORDER BY <expr>)
      (let ([table-to-sort (SELECT <attr-lst> FROM <tables> ...)])
-       (let ([get-target-attr (replace-attr
-                                          <key>
-                                          (attributes table-to-sort))])
+       (let ([key-retriever (λ(tuple) (eval (feed-tups (replace <expr> table-to-sort) tuple) ns))])
          (cons (attributes table-to-sort)
                (sort
                     (tuples table-to-sort)
-                    > ;order of sorting is decreasing
-                    #:key (λ(tup) (<function> (get-target-attr tup)))))))]
-
-    ; SELECT FROM ORDER BY (Sorted Basic Query)(for order-by with an attribute)
-    [(SELECT <attr-lst> FROM <tables> ... ORDER BY <key>)
-     (let ([table-to-sort (SELECT <attr-lst> FROM <tables> ...)])
-       (let ([get-target-attr (replace-attr
-                                          <key>
-                                          (attributes table-to-sort))])
-         (cons (attributes table-to-sort)
-               (sort
-                    (tuples table-to-sort)
-                    > ;order of sorting is decreasing
-                    #:key (λ(tup) (get-target-attr tup))))))]
+                    >
+                    #:key (λ(tup) (key-retriever tup))))))]
 
     ; SELECT FROM (Basic Query)
     [(SELECT <attr-lst> FROM <tables> ...)
