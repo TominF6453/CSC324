@@ -9,14 +9,36 @@ class macro to include support for traits and some basic introspection.
 ; QUESTION 1 (metaprogramming).
 (define-syntax class-meta
   (syntax-rules ()
-    
-    ))
+    [(class-meta <Class> (<attr> ...)
+       [(<method> <param> ...) <body>] ...)
+     (define (<Class> <attr> ...)
+       (lambda (msg)
+         (cond [(equal? msg (id->string <attr>)) <attr>]
+               ...
+               [(equal? msg (id->string <method>))
+                (lambda (<param> ...) <body>)]
+               ...
+               [(equal? msg "_attributes")
+                (sort (list (list (id->string <attr>) <attr> ) ...) string<? #:key (λ(lst) (first lst)))]
+               [(equal? msg "_methods")
+                (sort (list (list (id->string <method>) (λ(<param> ...) <body>)) ...) string<? #:key (λ(lst) (first lst)))]
+               [else "Unrecognized message!"]))
+       )]))
 
 
 ; QUESTION 2 (traits).
 (define-syntax class-trait
   (syntax-rules ()
     
+    ))
+
+; QUESTION 3 (fake constructor)
+#|
+WE NEED ONE-TWO PARAGRAPHS OF DOCSTRING HERE
+|#
+(define-syntax class-construct
+  (syntax-rules ()
+
     ))
 
 ; -----------------------------------------------------------------------------
