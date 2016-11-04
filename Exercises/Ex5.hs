@@ -33,14 +33,15 @@ data Tree = Empty | Node (Maybe Integer) Tree Tree deriving Show
 -- 2) If the tree is non-empty but only has "Nothing" values,
 --    return Nothing
 
--- Helper function, easier to sum over a list rather than a tree.
+-- Helper functions, easier to sum over a list rather than a tree.
 
 addnum :: (Maybe Integer) -> [Integer]
 addnum Nothing  = []
 addnum (Just x) = [x]
 
 treetolist :: Tree -> [Integer]
-treetolist (Node num l r) = addnum num ++ treetolist l ++ treetolist r
+treetolist Empty        = []
+treetolist (Node x l r) = addnum x ++ treetolist l ++ treetolist r
 
 treeSum :: Tree -> Maybe Integer
 treeSum Empty = Just 0
@@ -61,4 +62,5 @@ treeSum tree  = case treetolist tree of
 -- depending on which is compatible with the inner type.
 -- The type signature reveals more, as does the sample test.
 eitherMap :: (a -> c) -> (b -> d) -> Either a b -> Either c d
-eitherMap = undefined
+eitherMap ac bd (Left a) = Left (ac a)
+eitherMap ac bd (Right b) = Right (bd b)
