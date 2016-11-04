@@ -32,8 +32,21 @@ data Tree = Empty | Node (Maybe Integer) Tree Tree deriving Show
 -- 1) If the tree is empty, return Just 0
 -- 2) If the tree is non-empty but only has "Nothing" values,
 --    return Nothing
+
+-- Helper function, easier to sum over a list rather than a tree.
+
+addnum :: (Maybe Integer) -> [Integer]
+addnum Nothing  = []
+addnum (Just x) = [x]
+
+treetolist :: Tree -> [Integer]
+treetolist (Node num l r) = addnum num ++ treetolist l ++ treetolist r
+
 treeSum :: Tree -> Maybe Integer
-treeSum = undefined
+treeSum Empty = Just 0
+treeSum tree  = case treetolist tree of
+					[] -> Nothing
+					xs -> Just (sum xs)
 
 -- Question 2
 -- This question explores another classic type in Haskell: Either.
