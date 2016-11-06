@@ -19,18 +19,29 @@ class macro to include support for traits and some basic introspection.
                 (lambda (<param> ...) <body>)]
                ...
                [(equal? msg "_attributes")
-                (sort (list (list (id->string <attr>) <attr> ) ...) string<? #:key (λ(lst) (first lst)))]
+                (sort (list (list (id->string <attr>) <attr> ) ...)
+                      string<?
+                      #:key (λ(lst) (first lst)))]
                [(equal? msg "_methods")
-                (sort (list (list (id->string <method>) (λ(<param> ...) <body>)) ...) string<? #:key (λ(lst) (first lst)))]
+                (sort (list (list (id->string <method>) (λ(<param> ...) <body>)) ...)
+                      string<?
+                      #:key (λ(lst) (first lst)))]
                [else "Unrecognized message!"]))
        )]))
 
-
 ; QUESTION 2 (traits).
 (define-syntax class-trait
-  (syntax-rules ()
-    
-    ))
+  (syntax-rules (with)
+    [(class-trait <Class> (<attr> ...) (with <trait> ...)
+                 [(<method> <param> ...) <body>] ...)
+     (define (<Class> <attr> ...)
+       (λ(msg)
+         (cond [(equal? msg (id->string <attr>)) <attr>]
+               ...
+               [(equal? msg (id->string <method>))
+                (λ(<param> ...) <body>)]
+               ...
+               [else "Unrecognized message!"])))]))
 
 ; QUESTION 3 (fake constructor)
 #|
