@@ -32,16 +32,16 @@ class macro to include support for traits and some basic introspection.
 ; QUESTION 2 (traits).
 (define-syntax class-trait
   (syntax-rules (with)
-    [(class-trait <Class> (<attr> ...) (with <trait> ...)
+    [(class-trait <Class> (<attr> ...) (with)
+                  [(<method> <param> ...) <body>] ...)
+     (class-meta <Class> (<attr> ...)
+                 [(<method> <param> ...) <body>] ...)]
+    [(class-trait <Class> (<attr> ...) (with <trait> <next-traits> ...)
                  [(<method> <param> ...) <body>] ...)
-     (define (<Class> <attr> ...)
-       (λ(msg)
-         (cond [(equal? msg (id->string <attr>)) <attr>]
-               ...
-               [(equal? msg (id->string <method>))
-                (λ(<param> ...) <body>)]
-               ...
-               [else "Unrecognized message!"])))]))
+     (let ([temp-class (class-trait <Class> (<attr> ...) (with <next-traits> ...)
+                                    [(<method> <param> ...) <body>] ...)])
+       ; "Apply" <trait> to temp-class
+       )]))
 
 ; QUESTION 3 (fake constructor)
 #|
