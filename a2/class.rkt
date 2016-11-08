@@ -43,15 +43,6 @@ class macro to include support for traits and some basic introspection.
                ...
                [else "Unrecognized message!"])))]))
 
-; QUESTION 3 (fake constructor)
-#|
-WE NEED ONE-TWO PARAGRAPHS OF DOCSTRING HERE
-|#
-(define-syntax class-construct
-  (syntax-rules ()
-
-    ))
-
 ; -----------------------------------------------------------------------------
 ; Class macro. This section is just for your reference.
 ; -----------------------------------------------------------------------------

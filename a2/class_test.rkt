@@ -4,7 +4,6 @@
 
 ; Comment out tests to avoid "bad syntax" errors when working
 ; on the assignment.
-#|
 ; Traits for testing
 (define (distance-trait obj)
   (lambda (msg)
@@ -62,7 +61,7 @@
              [p2 (Point 15 40)])
         ((p1 "distance-plus") p2 20))
       35)
-|#
+
 ; Tests for Question 1
 
 (class-meta Point-meta (x y)
