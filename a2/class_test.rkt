@@ -25,20 +25,18 @@
 
 ; Tests for Question 2
 
-#|
 (class-trait Point (x y) (with distance-trait)
   [(distance other-point)
    (let ([dx (- x (other-point "x"))]
          [dy (- y (other-point "y"))])
      (sqrt (+ (* dx dx) (* dy dy))))])
-|#
 
 (class-trait Point2 (x y) (with distance-trait distance-trait-2)
   [(distance other-point)
    (let ([dx (- x (other-point "x"))]
          [dy (- y (other-point "y"))])
      (sqrt (+ (* dx dx) (* dy dy))))])
-#|
+
 (test (let* ([p1 (Point 2 3)])
         (list (p1 "x") (p1 "y")))
       '(2 3))
@@ -58,7 +56,7 @@
              [p4 ((p1 "closer") p2 p3)])
         (list (p4 "x") (p4 "y")))
       '(31 39))
-|#
+
 (test (let* ([p1 (Point2 30 40)]
              [p2 (Point 15 40)])
         ((p1 "distance-plus") p2 20))

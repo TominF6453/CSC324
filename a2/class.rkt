@@ -10,7 +10,7 @@ class macro to include support for traits and some basic introspection.
 (define-syntax class-meta
   (syntax-rules ()
     [(class-meta <Class> (<attr> ...)
-       [(<method> <param> ...) <body>] ...)
+                 [(<method> <param> ...) <body>] ...)
      (define (<Class> <attr> ...)
        (lambda (msg)
          (cond [(equal? msg (id->string <attr>)) <attr>]
@@ -34,16 +34,32 @@ class macro to include support for traits and some basic introspection.
   (syntax-rules (with)
     [(class-trait <Class> (<attr> ...) (with)
                   [(<method> <param> ...) <body>] ...)
-     (class-meta <Class> (<attr> ...)
-                 [(<method> <param> ...) <body>] ...)]
+     (define (<Class> <attr> ...)
+       (lambda (msg)
+         (cond [(equal? msg (id->string <attr>)) <attr>]
+               ...
+               [(equal? msg (id->string <method>))
+                (lambda (<param> ...) <body>)]
+               ...
+               [else "Unrecognized message!"])))]
+    [(class-trait <Class> (<attr> ...) (with <trait>)
+                  [(<method> <param> ...) <body>] ...)
+     (define (<Class> <attr> ...)
+       (begin
+         (class-trait temp-class (<attr> ...) (with)
+                      [(<method> <param> ...) <body>] ...)
+         (λ (msg)
+           (let ([obj (temp-class <attr> ...)])
+             ((<trait> obj) msg)))))]
     [(class-trait <Class> (<attr> ...) (with <trait> <next-traits> ...)
-                 [(<method> <param> ...) <body>] ...)
-     (let ([temp-class (class-trait <Class> (<attr> ...) (with <next-traits> ...)
-                                    [(<method> <param> ...) <body>] ...)])
-       (λ(msg)(cond [(not (equal? (<trait> msg) (temp-class msg))) ; if the message does match with the trait
-                     (<trait msg>)] ; use the trait's intepretation of the message
-                    [else (temp-class msg)] ; give the message to temp-class to try again
-                    )))]))
+                  [(<method> <param> ...) <body>] ...)
+     (define (<Class> <attr> ...)
+       (begin
+         (class-trait temp-class (<attr> ...) (with <next-traits> ...)
+                      [(<method> <param> ...) <body>] ...)
+         (λ (msg)
+           (let ([obj (temp-class <attr> ...)])
+             ((<trait> obj) msg)))))]))
 
 ; -----------------------------------------------------------------------------
 ; Class macro. This section is just for your reference.
