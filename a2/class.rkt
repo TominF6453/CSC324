@@ -32,16 +32,22 @@ class macro to include support for traits and some basic introspection.
 ; QUESTION 2 (traits).
 (define-syntax class-trait
   (syntax-rules (with)
+    
     [(class-trait <Class> (<attr> ...) (with)
                   [(<method> <param> ...) <body>] ...)
      (class-meta <Class> (<attr> ...)
                  [(<method> <param> ...) <body>] ...)]
+    
     [(class-trait <Class> (<attr> ...) (with <trait> <next-traits> ...)
                  [(<method> <param> ...) <body>] ...)
      (let ([temp-class (class-trait <Class> (<attr> ...) (with <next-traits> ...)
                                     [(<method> <param> ...) <body>] ...)])
-       ; "Apply" <trait> to temp-class
-       )]))
+       
+       (λ(msg)(cond [(not (equal? (<trait> msg) (temp-class msg))) ; if the message does match with the trait
+                     (<trait msg>)] ; use the trait's intepretation of the message
+
+                    [else (temp-class msg)] ; give the message to temp-class to try again
+                    )))]))
 
 ; -----------------------------------------------------------------------------
 ; Class macro. This section is just for your reference.

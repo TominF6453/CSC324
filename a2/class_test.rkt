@@ -25,11 +25,13 @@
 
 ; Tests for Question 2
 
+#|
 (class-trait Point (x y) (with distance-trait)
   [(distance other-point)
    (let ([dx (- x (other-point "x"))]
          [dy (- y (other-point "y"))])
      (sqrt (+ (* dx dx) (* dy dy))))])
+|#
 
 (class-trait Point2 (x y) (with distance-trait distance-trait-2)
   [(distance other-point)
