@@ -47,11 +47,9 @@ extending the functionality of the backtracking library.
 "false."
 |#
 (define (subsets lst)
-  (cond [(empty? lst) empty]
-        [else (let ([rest-subsets (subsets (rest lst))])
-                (-< rest-subsets
-                    (append2all (first lst)
-                                rest-subsets)))]))
+  (let ([x (checked-subsets lst)])
+    (feed-< x)))
+
 #| HELPER FUNCTIONS
 (append2all lst element)
   lst: a list (of lists)
@@ -62,10 +60,46 @@ extending the functionality of the backtracking library.
 > (append2all '((1 2 3 4) (5 6 7)) 8)
 '((8 1 2 3 4) (8 5 6 7))
 |#
-(define (append2all x lst)
-  (map (λ(sublst)(cons x sublst)) lst))
+(define (append2all lst element)
+  (map (λ(elem) (append (list element) elem))
+       lst))
 
-(subsets '(1 2))
+#|
+(unchecked-subsets lst)
+  lst: a list
+
+  Gets all subsets of list without checking for duplications.
+
+> (unchecked-subsets '(1 2 2))
+'(() (2) (2) (2 2) (1) (1 2) (1 2) (1 2 2))
+|#
+(define (unchecked-subsets lst)
+  (cond [(empty? lst) (list empty)]
+        [else (let ([x (unchecked-subsets (rest lst))])
+                (append x (append2all x (first lst))))]))
+
+#|
+(checked-subsets lst)
+  lst: a list
+
+  Gets all subsets of list, checking and removing duplicates.
+
+> (checked-subsets '(1 2 2))
+'(() (2) (2 2) (1) (1 2) (1 2 2))
+|#
+(define (checked-subsets lst)
+  (remove-duplicates (unchecked-subsets lst)))
+
+#|
+(feed-< lsts)
+  lsts: a list of lists
+
+  Feeds -< to a list of lists.
+|#
+(define (feed-< lsts)
+  (cond [(empty? lsts) empty]
+        [(equal? (length lsts) 1) (first lsts)]
+        [else (-< (first lsts) (feed-< (rest lsts)))]))
 
 ; QUESTION 4
 #|
