@@ -1,5 +1,6 @@
 #lang racket
 
+; CONSTANTS FOR STRINGS FOR EASY MODIFICATION
 (define attribute-string "attribute")
 (define line-string "line")
 (define badtag-warning "invalid tag")
@@ -21,16 +22,27 @@ Tags will have the following values (specified at the top of this file):
     line-string - designates the associated "line" as *not* an attribute
 
 All the "lines" entered into the pseudo-constructor will be considered,
-and those that are tagged with "attribute" will be set as 
+and those that are tagged with "attribute" will be identified as class attributes.
+All other intermediate "lines" that are not attributes must be tagged as
+"line". When the constructor is called, it generates a function that takes a
+message and returns the appropriate value. The message must be the string
+form of the attribute, otherwise badmsg-warning will be returned.
 
-Pseudo - Python example:
-> (define (f r) (+ r 5))
-> (class-construct MyClass
-    [(init (a b)
-     (let* ([r (f a)]
-            [this.x (f a)]
-            [this.y (list (b 100 r))]
-            [this.z "you are cool"])
+Examples:
+
+> (class-construct Cow (init (cowname cowcolor cowprice)
+                             (name cowname "attribute")
+                             (color cowcolor "attribute")
+                             (price cowprice "attribute")))
+> (define myCow (Cow "Cow" "White" 2))
+> (myCow "name")
+"Cow"
+> (myCow "color")
+"White"
+> (myCow "price")
+2
+> (myCow "apples")
+"invalid message"
 |#
 (define-syntax class-construct
   (syntax-rules (init)
@@ -50,6 +62,8 @@ Pseudo - Python example:
                              ...)]
                       [else badmsg-warning]))))]))
 
+
+; HELPER FUNCTIONS BELOW THIS LINE ===========================================
 #|
 Returns a list of variables (by name) that were tagged with attribute-string.
 If any tag is invalid, it will return badtag-warning.
@@ -76,3 +90,25 @@ has the tag attribute-string. If the tag is invalid, returns badtag-warning.
   (syntax-rules ()
     [(id->string <id>)
      (symbol->string (quote <id>))]))
+
+; HELPER FUNCTIONS END HERE ====================================================
+
+; EXAMPLE USAGE TO TRANSLATE PYTHON EXAMPLE IN ASSIGNMENT HANDOUT
+
+; Using the above macro to translate the class definition given in the assignment handout
+; Defining MyClass and its constructor
+(class-construct MyClass (init (a b)
+                             (r (f a) "line")
+                             (x r "attribute")
+                             (y (list b 100 r) "attribute")
+                             (z "You are cool" "attribute")))
+; Defining f
+(define (f r) (+ r 5))
+
+; Defining an example instance of MyClass
+(define myClassExample (MyClass 1 2))
+
+; Getting x, y, and z from the example instance
+(myClassExample "x")
+(myClassExample "y")
+(myClassExample "z")
