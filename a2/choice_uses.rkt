@@ -8,7 +8,7 @@ extending the functionality of the backtracking library.
 
 ; Import choice API
 (require racket/include)
-;(require "choice.rkt")
+(require "choice.rkt")
 
 ; Export functions for testing. Please don't change this line!
 (provide subsets sudoku-4 fold-<)
@@ -46,13 +46,11 @@ extending the functionality of the backtracking library.
 > (next)
 "false."
 |#
-
-(define (subsets lst)(cond [(empty? lst) (list empty)]
-                             [else (let ([next-subsets (subsets (rest lst))])
-                                     (append next-subsets
-                                             (append2all (first lst)
-                                                         next-subsets)))]))
-
+(define (subsets lst)(cond [(empty? lst) (-< empty)]
+                           [else (let ([rest-subsets (subsets (rest lst))])
+                                   (-< rest-subsets
+                                       (append2all (first lst)
+                                                   rest-subsets)))]))
 #| HELPER FUNCTIONS
 (append2all lst element)
   lst: a list (of lists)
@@ -65,6 +63,8 @@ extending the functionality of the backtracking library.
 |#
 (define (append2all x lst) (map (λ(sublst)(cons x sublst))
                                 lst))
+
+(subsets '(1 2))
 
 ; QUESTION 4
 #|
