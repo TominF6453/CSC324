@@ -7,7 +7,9 @@ extending the functionality of the backtracking library.
 #lang racket
 
 ; Import choice API
-(require "choice.rkt")
+(require racket/include)
+(include "choice.rkt")
+;(require "choice.rkt")
 
 ; Export functions for testing. Please don't change this line!
 (provide subsets sudoku-4 fold-<)
