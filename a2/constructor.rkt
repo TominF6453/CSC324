@@ -3,6 +3,7 @@
 (define attribute-string "attribute")
 (define line-string "line")
 (define badtag-warning "invalid tag")
+(define badmsg-warning "invalid message")
 
 ; QUESTION 3 (fake constructor)
 #|
@@ -39,11 +40,15 @@ Pseudo - Python example:
      (define (<Class> <attr> ...)
        (let* ([<var> <body>]
               ...
-              [lookup-table (list (list (symbol->string <var>)
-                                        (<tag>))
-                                  ...)])
-         (λ(msg)(empty))))]))
-
+              [lookup-table (list (list (id->string <var>)
+                                        <tag>)
+                                  ...)]
+              [attributes (get-attributes lookup-table)])
+         (λ(msg)(cond [(member msg attributes)
+                       (cond [(equal? (id->string <var>) msg)
+                              <body>]
+                             ...)]
+                      [else badmsg-warning]))))]))
 
 #|
 Returns a list of variables (by name) that were tagged with attribute-string.
@@ -52,10 +57,11 @@ If any tag is invalid, it will return badtag-warning.
 (define (get-attributes lookup-table)
   (let ([is-attribute-lst (map (λ(entry)(is-attribute entry))
                                lookup-table)])
-    (if (member? badtag-warning is-attribute-lst)
+    (if (member badtag-warning is-attribute-lst)
         badtag-warning
-        (filter λ(entry)(is-attribute entry)
-                lookup-table))))
+        (map (λ(entry)(first entry))
+             (filter (λ(entry)(is-attribute entry))
+                     lookup-table)))))
 
 #|
 Returns true if lookup-entry (in the style of '(variable-name tag))
@@ -66,11 +72,7 @@ has the tag attribute-string. If the tag is invalid, returns badtag-warning.
         [(equal? line-string (last lookup-entry)) #f]
         [else badtag-warning]))
 
-#|
-Returns true if lookup-entry (in the style of '(variable-name tag))
-has the tag line-string. If the tag is invalid, returns badtag-warning.
-|#
-(define (is-attribute lookup-entry)
-  (cond [(equal? line-string (last lookup-entry)) #t]
-        [(equal? attribute-string (last lookup-entry)) #f]
-        [else badtag-warning]))
+(define-syntax id->string
+  (syntax-rules ()
+    [(id->string <id>)
+     (symbol->string (quote <id>))]))
