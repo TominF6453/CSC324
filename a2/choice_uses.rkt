@@ -45,8 +45,38 @@ extending the functionality of the backtracking library.
 > (next)
 "false."
 |#
-(define subsets (void))
 
+(define (subsets lst)
+  (let ([x (unchecked-subsets lst)])
+    (apply -< (remove-duplicates x))))
+
+#| HELPER FUNCTIONS
+(append2all lst element)
+  lst: a list (of lists)
+  element: the element to append
+
+  Adds the element to each list within list.
+
+> (append2all '((1 2 3 4) (5 6 7)) 8)
+'((8 1 2 3 4) (8 5 6 7))
+|#
+(define (append2all lst element)
+  (map (λ(elem) (append (list element) elem))
+       lst))
+
+#|
+(unchecked-subsets lst)
+  lst: a list
+
+  Gets all subsets of list without checking for duplications.
+
+> (unchecked-subsets '(1 2 2))
+'(() (2) (2) (2 2) (1) (1 2) (1 2) (1 2 2))
+|#
+(define (unchecked-subsets lst)
+  (cond [(empty? lst) (list empty)]
+        [else (let ([x (unchecked-subsets (rest lst))])
+                (append x (append2all x (first lst))))]))
 
 ; QUESTION 4
 #|
