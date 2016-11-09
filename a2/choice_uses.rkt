@@ -8,7 +8,6 @@ extending the functionality of the backtracking library.
 
 ; Import choice API
 (require racket/include)
-(include "choice.rkt")
 ;(require "choice.rkt")
 
 ; Export functions for testing. Please don't change this line!
@@ -48,9 +47,11 @@ extending the functionality of the backtracking library.
 "false."
 |#
 
-(define (subsets lst)
-  (let ([x (unchecked-subsets lst)])
-    (apply -< (remove-duplicates x))))
+(define (subsets lst)(cond [(empty? lst) (list empty)]
+                             [else (let ([next-subsets (subsets (rest lst))])
+                                     (append next-subsets
+                                             (append2all (first lst)
+                                                         next-subsets)))]))
 
 #| HELPER FUNCTIONS
 (append2all lst element)
@@ -62,23 +63,8 @@ extending the functionality of the backtracking library.
 > (append2all '((1 2 3 4) (5 6 7)) 8)
 '((8 1 2 3 4) (8 5 6 7))
 |#
-(define (append2all lst element)
-  (map (λ(elem) (append (list element) elem))
-       lst))
-
-#|
-(unchecked-subsets lst)
-  lst: a list
-
-  Gets all subsets of list without checking for duplications.
-
-> (unchecked-subsets '(1 2 2))
-'(() (2) (2) (2 2) (1) (1 2) (1 2) (1 2 2))
-|#
-(define (unchecked-subsets lst)
-  (cond [(empty? lst) (list empty)]
-        [else (let ([x (unchecked-subsets (rest lst))])
-                (append x (append2all x (first lst))))]))
+(define (append2all x lst) (map (λ(sublst)(cons x sublst))
+                                lst))
 
 ; QUESTION 4
 #|
