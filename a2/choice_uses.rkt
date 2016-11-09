@@ -47,11 +47,12 @@ extending the functionality of the backtracking library.
 "false."
 |#
 
-(define (subsets lst)(cond [(empty? lst) (list empty)]
-                             [else (let ([next-subsets (subsets (rest lst))])
-                                     (append next-subsets
-                                             (append2all (first lst)
-                                                         next-subsets)))]))
+(define (subsets lst)
+  (cond [(empty? lst) (list empty)]
+        [else (let ([next-subsets (subsets (rest lst))])
+                (append next-subsets
+                        (append2all (first lst)
+                                    next-subsets)))]))
 
 #| HELPER FUNCTIONS
 (append2all lst element)
@@ -60,11 +61,12 @@ extending the functionality of the backtracking library.
 
   Adds the element to each list within list.
 
-> (append2all '((1 2 3 4) (5 6 7)) 8)
+> (append2all 8 '((1 2 3 4) (5 6 7)))
 '((8 1 2 3 4) (8 5 6 7))
 |#
-(define (append2all x lst) (map (λ(sublst)(cons x sublst))
-                                lst))
+(define (append2all x lst)
+  (map (λ(sublst)(cons x sublst))
+       lst))
 
 ; QUESTION 4
 #|
