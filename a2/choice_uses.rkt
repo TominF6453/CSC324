@@ -114,11 +114,77 @@ extending the functionality of the backtracking library.
   is just to correctly express the constraints, and let the computer
   do the work.
 |#
-(define sudoku-4 (void))
+(define (sudoku-4 puzzle)
+  void
+  )
 
 
-; QUESTION 5
 #|
+Gets row (indexed 0, 1, 2, 3, going down) from puzzle
+|#
+(define (get-row row puzzle)
+  (list-ref puzzle row))
+
+#|
+Gets column (indexed 0, 1, 2, 3, going left to right) from puzzle
+|#
+(define (get-column column puzzle)
+  (map (λ(row)(list-ref row column))
+       puzzle))
+
+#|
+Gets the soduku square (indexed 0, 1, 2, 3, going left to right, up to down) from puzzle
+|#
+(define (get-square square puzzle)
+  (let ([flat-lst (flatten puzzle)])
+    (cond [(equal? square 0) (list (list-ref flat-lst 0)
+                                   (list-ref flat-lst 1)
+                                   (list-ref flat-lst 4)
+                                   (list-ref flat-lst 5))]
+          [(equal? square 1) (list (list-ref flat-lst 2)
+                                   (list-ref flat-lst 3)
+                                   (list-ref flat-lst 6)
+                                   (list-ref flat-lst 7))]
+          [(equal? square 2) (list (list-ref flat-lst 8)
+                                   (list-ref flat-lst 9)
+                                   (list-ref flat-lst 12)
+                                   (list-ref flat-lst 13))]
+          [(equal? square 3) (list (list-ref flat-lst 10)
+                                   (list-ref flat-lst 11)
+                                   (list-ref flat-lst 14)
+                                   (list-ref flat-lst 15))])))
+    
+#|
+Returns whether or not the given soduku group is valid
+|#
+(define (valid-group group)
+  (if (false? (check-duplicates group)) #t #f))
+
+#|
+Returns whether or not every element in bool-lst is true.
+|#
+(define (and-all bool-lst)
+  (cond [(empty? bool-lst) #t]
+        [else (and (first bool-lst)
+                   (and-all (rest bool-lst)))]))
+
+#|
+Returns whether or not the given sudoku puzzle is valid
+|#
+(define (valid-puzzle puzzle)
+  (let* ([indices '(0 1 2 3)]
+        [rows (map (λ(index)(get-row index puzzle))
+                   indices)]
+        [cols (map (λ(index)(get-column index puzzle))
+                   indices)]
+        [sqrs (map (λ(index)(get-square index puzzle))
+                   indices)]
+        [groups (append rows cols sqrs)]
+        [group-validity (map (λ(grp)(valid-group grp))
+                             groups)])
+    (and-all group-validity)))
+    ; QUESTION 5
+    #|
 (fold-< combine init expr)
   combine: a binary function
   init: an initial value
@@ -131,6 +197,6 @@ extending the functionality of the backtracking library.
     1) The value of the next choice
     2) The value of <init>
 |#
-(define-syntax fold-<
-  (syntax-rules ()
-    ))
+    (define-syntax fold-<
+      (syntax-rules ()
+        ))
