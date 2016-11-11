@@ -13,7 +13,7 @@ extending the functionality of the backtracking library.
 ; Export functions for testing. Please don't change this line!
 (provide subsets sudoku-4 fold-<)
 
-; QUESTION 3
+; QUESTION 4
 #|
 (subsets lst)
   lst: a list
@@ -101,7 +101,7 @@ extending the functionality of the backtracking library.
         [(equal? (length lsts) 1) (first lsts)]
         [else (-< (first lsts) (feed-< (rest lsts)))]))
 
-; QUESTION 4
+; QUESTION 5
 #|
 (sudoku-4 puzzle)
   puzzle: a nested list representing a 4-by-4 Sudoku puzzle
@@ -115,8 +115,8 @@ extending the functionality of the backtracking library.
   do the work.
 |#
 (define (sudoku-4 puzzle)
-  void
-  )
+  (let ([possibilities (possible-sodukus puzzle)])
+    ))
 
 
 #|
@@ -183,7 +183,180 @@ Returns whether or not the given sudoku puzzle is valid
         [group-validity (map (λ(grp)(valid-group grp))
                              groups)])
     (and-all group-validity)))
-    ; QUESTION 5
+
+#|
+Returns whether or not the given group matches pattern.
+A soduku group will match a pattern if it has the same
+elements in the same spaces as the pattern.
+
+> (group-match '(1 2 3 4) '(1 "" "" 2))
+#f
+> (group-match '(1 2 3 4) '(1 2 3 4))
+#t
+> (group-match '(1 2 3 4) '(1 "" "" ""))
+#t
+|#
+(define (group-match group pattern)
+  (let* ([pairs (make-pairs group pattern)]
+         [matches (map (λ(pair)(elem-matches
+                               (first pair)
+                               (last pair)))
+                       pairs)])
+    (and-all matches)))
+
+
+#|
+Returns whether or not soduku matches pattern.
+A soduku will match a pattern if it has the same
+elements in the same spaces as the pattern.
+
+> (define grid1
+  '((1 2 3 4)
+    ("" "" 1 "")
+    ("" "" 2 3)
+    (2 "" "" 1)))
+> (define completed
+    '((1 2 3 4)
+        (3 4 1 2)
+        (4 1 2 3)
+        (2 3 4 1)))
+> (soduku-match completed grid1)
+#t
+
+|#
+(define (soduku-match soduku pattern)
+  (let* ([row-pattern-pairs (make-pairs soduku pattern)]
+         [row-matches (map (λ(pair)(group-match (first pair)
+                                                (last pair)))
+                           row-pattern-pairs)])
+    (and-all row-matches)))
+
+
+#|
+Returns whether or not soduku matches pattern AND is a valid
+soduku configuration.
+
+|#
+(define (valid-soduku-match soduku pattern)
+  (and (soduku-match soduku pattern)
+       (valid-puzzle soduku)))
+  
+#|
+Returns a list of lists in the following form:
+(Every possible group configuration that matches pattern ...)
+
+> (possible-groups '(1 2 3 4))
+'((1 2 3 4))
+> (possible-groups '(1 2 3 ""))
+'((1 2 3 4))
+> (possible-groups '(1 2 "" ""))
+'((1 2 3 4) (1 2 4 3))
+
+|#
+(define (possible-groups pattern)
+  (let ([all-permutations (permutations '(1 2 3 4))])
+    (filter (λ(row)(group-match row pattern))
+            all-permutations)))
+
+#|
+Returns a triple-nested list in the following form:
+((Every possible first-row configuration that matches the first pattern ...)
+ (Every possible second-row configuration that matches the second pattern ...)
+ ...
+ (Every possible fourth-row configuration that matches the fourth pattern ...)
+)
+|#
+(define (row-possibilities soduku-pattern)
+  (map (λ(row)(possible-groups row))
+       soduku-pattern))
+
+#|
+Prepends item to all the lists in lst.
+If there are no lists in lst, return empty
+|#
+(define (prepend-to-all item lst)
+  (if (empty? lst)
+      empty
+      (cons (cons item
+                  (first lst))
+            (prepend-to-all item
+                            (rest lst)))))
+
+#|
+Prepends each item from items to all the lists in lst
+|#
+(define (prepend-items-to-all items lst)
+  (apply append
+         (map (λ(item)(prepend-to-all item lst))
+              items)))
+
+
+#|
+"Traverses" lst in the following fashion:
+If lst = '((A B) (C D E))
+Returns: '((A C) (A D) (A E) (B C) (B D) (B E))
+
+> (traverse-nested '((1 2)(3 4)))
+'((1 3) (1 4) (2 3) (2 4))
+|#
+(define (traverse-nested lst)
+  (cond [(empty? lst) (list empty)]
+        [else (let ([traversals (traverse-nested (rest lst))])
+                (prepend-items-to-all (first lst)
+                                      traversals))]))
+
+
+#|
+Returns every possible soduku board from soduku pattern.
+These possibilities are dependent on possible rows and may
+therefore not be valid configurations.
+|#
+(define (possible-sodukus soduku-pattern)
+  (traverse-nested (row-possibilities soduku-pattern)))
+
+#|
+Returns the factorial of n.
+
+> (factorial 0)
+1
+> (factorial 3)
+6
+|#
+(define (factorial n)
+  (if (equal? n 0)
+      1
+      (* n
+         (factorial (- n 1)))))
+
+#|
+Makes a list of lists from same-length lists lst1 and lst2
+in the form ((lst1[i] lst2[i]) ...) for every 0 <= i < (length lst1).
+> (make-pairs '(1 2) '(3 4))
+'((1 3) (2 4))
+> (make-pairs '() '())
+'()
+|#
+(define (make-pairs lst1 lst2)
+  (cond [(empty? lst1) empty]
+        [else (cons (list (first lst1)
+                          (first lst2))
+                    (make-pairs (rest lst1)
+                                (rest lst2)))]))
+
+#|
+Returns true iff elem is equal to to-comp, or if to-comp is "".
+> (elem-matches 1 "")
+#t
+> (elem-matches 1 1)
+#t
+> (elem-matches 1 2)
+#f
+|#
+(define (elem-matches elem to-comp)
+  (or (equal? "" to-comp)
+      (equal? elem to-comp)))
+
+; QUESTION 6
     #|
 (fold-< combine init expr)
   combine: a binary function
