@@ -116,7 +116,7 @@ extending the functionality of the backtracking library.
 |#
 (define (sudoku-4 puzzle)
   (let ([possibilities (possible-sodukus puzzle)])
-    ))
+    empty))
 
 
 #|
