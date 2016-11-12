@@ -115,8 +115,14 @@ extending the functionality of the backtracking library.
   do the work.
 |#
 (define (sudoku-4 puzzle)
-  (let ([possibilities (possible-sodukus puzzle)])
-    empty))
+  (let ([possibilities (feed-< (possible-sodukus puzzle))])
+    (?- sudoku? possibilities)))
+
+#|
+Predicate used for correct sudoku puzzles, used in ?-
+|#
+(define (sudoku? puzzle)
+  (valid-puzzle puzzle))
 
 
 #|
@@ -230,16 +236,6 @@ elements in the same spaces as the pattern.
                                                 (last pair)))
                            row-pattern-pairs)])
     (and-all row-matches)))
-
-
-#|
-Returns whether or not soduku matches pattern AND is a valid
-soduku configuration.
-
-|#
-(define (valid-soduku-match soduku pattern)
-  (and (soduku-match soduku pattern)
-       (valid-puzzle soduku)))
   
 #|
 Returns a list of lists in the following form:
