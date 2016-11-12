@@ -159,7 +159,7 @@ Gets the soduku square (indexed 0, 1, 2, 3, going left to right, up to down) fro
                                    (list-ref flat-lst 11)
                                    (list-ref flat-lst 14)
                                    (list-ref flat-lst 15))])))
-    
+
 #|
 Returns whether or not the given soduku group is valid
 |#
@@ -179,15 +179,15 @@ Returns whether or not the given sudoku puzzle is valid
 |#
 (define (valid-puzzle puzzle)
   (let* ([indices '(0 1 2 3)]
-        [rows (map (λ(index)(get-row index puzzle))
-                   indices)]
-        [cols (map (λ(index)(get-column index puzzle))
-                   indices)]
-        [sqrs (map (λ(index)(get-square index puzzle))
-                   indices)]
-        [groups (append rows cols sqrs)]
-        [group-validity (map (λ(grp)(valid-group grp))
-                             groups)])
+         [rows (map (λ(index)(get-row index puzzle))
+                    indices)]
+         [cols (map (λ(index)(get-column index puzzle))
+                    indices)]
+         [sqrs (map (λ(index)(get-square index puzzle))
+                    indices)]
+         [groups (append rows cols sqrs)]
+         [group-validity (map (λ(grp)(valid-group grp))
+                              groups)])
     (and-all group-validity)))
 
 #|
@@ -205,8 +205,8 @@ elements in the same spaces as the pattern.
 (define (group-match group pattern)
   (let* ([pairs (make-pairs group pattern)]
          [matches (map (λ(pair)(elem-matches
-                               (first pair)
-                               (last pair)))
+                                (first pair)
+                                (last pair)))
                        pairs)])
     (and-all matches)))
 
@@ -236,7 +236,7 @@ elements in the same spaces as the pattern.
                                                 (last pair)))
                            row-pattern-pairs)])
     (and-all row-matches)))
-  
+
 #|
 Returns a list of lists in the following form:
 (Every possible group configuration that matches pattern ...)
@@ -353,7 +353,7 @@ Returns true iff elem is equal to to-comp, or if to-comp is "".
       (equal? elem to-comp)))
 
 ; QUESTION 6
-    #|
+#|
 (fold-< combine init expr)
   combine: a binary function
   init: an initial value
@@ -366,6 +366,7 @@ Returns true iff elem is equal to to-comp, or if to-comp is "".
     1) The value of the next choice
     2) The value of <init>
 |#
-    (define-syntax fold-<
-      (syntax-rules ()
-        ))
+(define-syntax fold-<
+  (syntax-rules ()
+    [(fold-< <combine> <init> <expr>)
+     (foldl <combine> <init> (all <expr>))]))
