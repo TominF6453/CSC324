@@ -26,7 +26,9 @@ module Ex6 (primes, Tree(Empty, Node), treeHeight) where
 -- Remember that 1 is not a prime, but 2 is a prime.
 -- You may want to use the definition of 'nats' from the lecture
 primes :: [Integer]
-primes = undefined
+primes = lst [2..]
+  where
+    lst (p:xs) = p : lst [x|x <- xs, x `mod` p > 0]
 
 
 
@@ -50,6 +52,5 @@ tree = Node 5 (Node 3 Empty
 -- Define 'treeHeight', which takes a tree and returns the height of a tree.
 -- Note that the empty tree has a height of 0.
 treeHeight :: Tree -> Integer
-treeHeight = undefined
-
-
+treeHeight Empty 		= 0
+treeHeight (Node _ l r)	= 1 + max (treeHeight l) (treeHeight r)
