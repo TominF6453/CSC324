@@ -27,7 +27,10 @@ We strongly recommend not changing this file.
     [(-< <expr1> <expr2> ...)
      (let/cc cont
        ; Push a new choice onto choices.
-       (add-choice! (lambda () (cont (-< <expr2> ...))))
+       (begin
+         ; As we push the λ into choices, push the expression itself into exprs for (peek)
+         (add-expr! '(-< <expr2> ...))
+         (add-choice! (lambda () (cont (-< <expr2> ...)))))
        <expr1>)]))
 
 
@@ -53,6 +56,26 @@ We strongly recommend not changing this file.
       ; Notice that it's ((get-choice!)) and not (get-choice!).
       ; What's the difference?
       ((get-choice!))))
+
+#| Actual peek code, very similar to (next) but using the other stack.
+(peek)
+
+  Returns the most recently stored choice point without executing.
+> (-< 1 2 3)
+1
+> (peek)
+'(-< 2 3)
+> (next)
+2
+> (peek)
+'(-< 3)
+> (next)
+3
+|#
+(define (peek)
+  (if (empty? choices)
+      "false."
+      (get-expr!)))
 
 
 #|
@@ -126,3 +149,17 @@ We strongly recommend not changing this file.
   (let ([choice (first choices)])
     (set! choices (rest choices))
     choice))
+
+; All the additional private values related to the raw expressions, these don't include the λ.
+; For use in (peek). Very similar to the choices code.
+; The stack of expressions, represented as a list.
+(define exprs '())
+
+; Add expression to expression stack.
+(define (add-expr! expr)
+  (set! exprs
+        (cons expr exprs)))
+
+; Return the most recent expression on the stack.
+(define (get-expr!)
+  (first exprs))
