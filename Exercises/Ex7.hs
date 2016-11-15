@@ -26,7 +26,14 @@ module Ex7 (domain, TripleDeep(ShallowEnd, DeepEnd)) where
 -- of domain does not contain any duplicates.
 -- For example, domain [(1, 2), (2, 3), (1, 3)] = [1,2]
 domain :: Eq a => [(a, b)] -> [a] 
-domain = undefined
+domain []  = []
+domain lst = fst (head lst):next
+               where next | 
+
+contains :: Eq a => a -> [a] -> Bool
+contains _ []  = False
+contains x lst | x == head lst = True
+               | otherwise     = contains x (tail lst)
 
 
 -- TripleDeep is a datatype to define a tree, where each node contains either:
