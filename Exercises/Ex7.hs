@@ -27,13 +27,15 @@ module Ex7 (domain, TripleDeep(ShallowEnd, DeepEnd)) where
 -- For example, domain [(1, 2), (2, 3), (1, 3)] = [1,2]
 domain :: Eq a => [(a, b)] -> [a] 
 domain []  = []
-domain lst = fst (head lst):next
-               where next | 
+domain lst = remdupes (getfsts lst)
 
-contains :: Eq a => a -> [a] -> Bool
-contains _ []  = False
-contains x lst | x == head lst = True
-               | otherwise     = contains x (tail lst)
+getfsts :: [(a,b)] -> [a]
+getfsts []  = []
+getfsts lst = fst (head lst):getfsts (tail lst)
+
+remdupes :: Eq a => [a] -> [a]
+remdupes []     = []
+remdupes (x:xs) = x:remdupes (filter (/= x) xs)
 
 
 -- TripleDeep is a datatype to define a tree, where each node contains either:
@@ -53,6 +55,7 @@ tree = DeepEnd (ShallowEnd 1)
 -- Question 2
 -- Write a Functor instance for TripleDeep.
 instance Functor TripleDeep where
-    fmap = undefined
+    fmap f (ShallowEnd x)   = ShallowEnd (f x)
+    fmap f (DeepEnd a b c)  = DeepEnd (fmap f a) (fmap f b) (fmap f c)
 
 
