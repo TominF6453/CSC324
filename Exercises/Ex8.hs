@@ -27,7 +27,7 @@ module Ex8 (geoSeq, monadIf, monadIf2) where
 -- Define a function 'geoSeq', which takes two numbers a and r,
 -- and returns the infinite list [a, ar, ar^2, ar^3, ar^3, ...]
 geoSeq :: Num a => a -> a -> [a]
-geoSeq = undefined
+geoSeq x y = x:(geoSeq (x * y) y)
 
 -- Question 2: Monads
 -- This question is meant to give you a bit of experience working with Monads.
@@ -41,7 +41,8 @@ geoSeq = undefined
 -- for other functions which can help solve this problem. Don't! You can do
 -- this using only the three base Monad functions.
 monadIf :: Monad m => m Bool -> m a -> m a -> m a
-monadIf = undefined
+monadIf x y z | x         = x >> y >>= return
+              | otherwise = x >> z >>= return
 
 -- Question 3: Now with Either
 -- First, read through the few paragraphs on Either in LYAH:
@@ -58,4 +59,6 @@ monadIf = undefined
 -- HINT: use return :: Monad m => a -> m a. This allows you to inject
 -- a value into a monadic context.
 monadIf2 :: Monad m => m Bool -> m a -> m b -> m (Either a b)
-monadIf2 = undefined
+monadIf2 Nothing _ _      = return Nothing
+monadIf2 (Just True) x _  = return (Just (Left x))
+monadIf2 (Just False) _ y = return (Just (Right y))
