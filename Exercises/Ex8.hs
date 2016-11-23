@@ -41,8 +41,7 @@ geoSeq x y = x:(geoSeq (x * y) y)
 -- for other functions which can help solve this problem. Don't! You can do
 -- this using only the three base Monad functions.
 monadIf :: Monad m => m Bool -> m a -> m a -> m a
-monadIf x y z | x         = x >> y >>= return
-              | otherwise = x >> z >>= return
+monadIf x y z = x >>= \t -> if t then y else z
 
 -- Question 3: Now with Either
 -- First, read through the few paragraphs on Either in LYAH:
@@ -59,6 +58,10 @@ monadIf x y z | x         = x >> y >>= return
 -- HINT: use return :: Monad m => a -> m a. This allows you to inject
 -- a value into a monadic context.
 monadIf2 :: Monad m => m Bool -> m a -> m b -> m (Either a b)
-monadIf2 Nothing _ _      = return Nothing
-monadIf2 (Just True) x _  = return (Just (Left x))
-monadIf2 (Just False) _ y = return (Just (Right y))
+monadIf2 x y z = x >>= \t -> if t then y >>= left else z >>= right
+
+left :: Monad m => a -> m (Either a _)
+left x = return (Left x)
+
+right :: Monad m => a -> m (Either _ a)
+right x = return (Right x)
