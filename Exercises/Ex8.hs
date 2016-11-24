@@ -58,10 +58,5 @@ monadIf x y z = x >>= \t -> if t then y else z
 -- HINT: use return :: Monad m => a -> m a. This allows you to inject
 -- a value into a monadic context.
 monadIf2 :: Monad m => m Bool -> m a -> m b -> m (Either a b)
-monadIf2 x y z = x >>= \t -> if t then y >>= left else z >>= right
-
-left :: Monad m => a -> m (Either a _)
-left x = return (Left x)
-
-right :: Monad m => a -> m (Either _ a)
-right x = return (Right x)
+monadIf2 x y z = x >>= \t -> if t then y >>= (\m -> return (Left m))
+                             else      z >>= (\n -> return (Right n))
