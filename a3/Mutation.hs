@@ -29,15 +29,18 @@ data Pointer a = P Integer
 class Mutable a where
     -- Look up a value in memory referred to by a pointer.
     get :: Memory -> Pointer a -> a
-	get mem ptr = lookupA mem ptr
+	get mem (P x) = if (containsA mem x) then
+						lookupA mem x
+                    else
+						error "Doesn't exist"
 
     -- Change a value in memory referred to by a pointer.
     -- Return the new memory after the update.
     set :: Memory -> Pointer a -> a -> Memory
-	set mem ptr x = updateA mem (ptr, x)
+	set mem (P x) val | containsA mem x = updateA mem (x, val)
+				      | otherwise 		= error "Doesn't exist"
 
     -- Create a new memory location storing a value, returning a new pointer
     -- and the new memory with the new value.
     -- Raise an error if the input Integer is already storing a value.
     def :: Memory -> Integer -> a -> (Pointer a, Memory)
-	def mem int x = 
