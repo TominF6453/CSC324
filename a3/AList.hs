@@ -32,7 +32,7 @@ insertA alist (key, val) | containsA alist key == False = alist ++ [(key, val)]
 containsA :: Eq a => AList a b -> a -> Bool
 containsA [] _      = False
 containsA alist key | fst (head alist) == key = True
-					| otherwise 			  = False
+					| otherwise 			  = containsA (tail alist) key
 
 -- | Returns a new association list which is the old one, except with 
 --   the value corresponding to the given key changed to the given new value.

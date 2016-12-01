@@ -11,7 +11,7 @@ module Mutation (
     )
     where
 
-import AList (AList, lookupA, insertA, updateA)
+import AList (AList, lookupA, insertA, updateA, containsA)
 
 -- A type representing the possible values stored in memory.
 data Value = IntVal Integer |
@@ -29,12 +29,15 @@ data Pointer a = P Integer
 class Mutable a where
     -- Look up a value in memory referred to by a pointer.
     get :: Memory -> Pointer a -> a
+	get mem ptr = lookupA mem ptr
 
     -- Change a value in memory referred to by a pointer.
     -- Return the new memory after the update.
     set :: Memory -> Pointer a -> a -> Memory
+	set mem ptr x = updateA mem (ptr, x)
 
     -- Create a new memory location storing a value, returning a new pointer
     -- and the new memory with the new value.
     -- Raise an error if the input Integer is already storing a value.
     def :: Memory -> Integer -> a -> (Pointer a, Memory)
+	def mem int x = 
