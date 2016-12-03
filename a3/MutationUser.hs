@@ -12,8 +12,7 @@ import Mutation (
 --   Return the pointer to each stored value, and the new memory.
 --   You may assume these locations are not already used by the memory.
 pointerTest :: Integer -> Memory -> ((Pointer Integer, Pointer Bool), Memory)
-pointerTest num mem = ((firstPtr, secondPtr), secondMem)
-						where
+pointerTest num mem = ((firstPtr, secondPtr), secondMem) where
 							firstPair = (def mem 100 (num + 3))
 							firstPtr = fst firstPair
 							firstMem = snd firstPair
