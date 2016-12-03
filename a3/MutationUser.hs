@@ -15,3 +15,8 @@ import Mutation (
 pointerTest :: Integer -> Memory -> ((Pointer Integer, Pointer Bool), Memory)
 pointerTest = undefined
 
+swap :: Mutable a => Pointer a -> Pointer a -> StateOp ()
+swap = undefined
+
+swapCycle :: Mutable a => [Pointer a] -> StateOp ()
+swapCycle = undefined

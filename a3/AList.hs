@@ -8,12 +8,24 @@ module AList (
     lookupA,
     insertA,
     updateA,
-	containsA
+	containsA,
+	freeA
     )
     where
 
 
 type AList a b = [(a, b)]
+
+-- | Finds and removes the key from the given association list, returns the new
+--   list.
+--   Assumes the key is in the association list.
+--   To be used for freeing memory in part 4.
+freeA :: Eq a => AList a b -> a -> AList a b
+freeA [] _ 		 = []
+freeA (a:as) key = if (fst a) == key then
+						as
+				   else
+						a:(freeA as key)
 
 -- | Returns the value in the association list corresponding to the given key.
 --   Assumes that the key is in the association list.
