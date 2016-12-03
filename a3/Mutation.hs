@@ -48,28 +48,37 @@ extractBool (BoolVal b) = b
 
 instance Mutable Integer where
 
-    get mem (P p) = if (containsA mem p) then
-                        extractInt (lookupA mem p)
-                    else
-                        error "Doesn't exist"
+    get mem (P p)     = if (containsA mem p) then
+                        	extractInt (lookupA mem p)
+                    	else
+                        	error "Doesn't exist"
 
     set mem (P p) val = if (containsA mem p) then
                             updateA mem (p, (IntVal val))
                         else
                             error "Doesn't exist"
 
+	def mem int val   = if (containsA mem int) then
+							error "Already exists"
+						else
+							(Pointer int, insertA mem (int, (IntVal val)))
+
 instance Mutable Bool where
 
-    get mem (P p) = if (containsA mem p) then
-                        extractBool (lookupA mem p)
-                    else
-                        error "Doesn't exist"
+    get mem (P p)     =	if (containsA mem p) then
+                       		extractBool (lookupA mem p)
+                    	else
+                        	error "Doesn't exist"
 
     set mem (P p) val = if (containsA mem p) then
                             updateA mem (p, (BoolVal val))
                         else
                             error "Doesn't exist"
 
+	def mem int val   = if (containsA mem int) then
+							error "Already exists"
+						else
+							(Pointer int, insertA mem (int, (BoolVal val)))
 
 
 -- StateOp declarations and such
