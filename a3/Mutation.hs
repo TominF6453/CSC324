@@ -101,10 +101,11 @@ op1 >>> op2 = (StateOp x) where
 
 -- "bind"
 (>~>) :: StateOp a -> (a -> StateOp b) -> StateOp b
-(f >~> g) s =
-    let (x, s1) = f s
-        newStateOp = g x
-    in newStateOp s1
+f >~> g = (StateOp y) where
+    y = \s ->
+        let (x, s1) = runOp f s
+            newStateOp = g x
+        in runOp newStateOp s1
 
 -- | Memory allocation functions using StateOp
 -- Allocating memory
