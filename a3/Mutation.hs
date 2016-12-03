@@ -37,3 +37,32 @@ class Mutable a where
     -- and the new memory with the new value.
     -- Raise an error if the input Integer is already storing a value.
     def :: Memory -> Integer -> a -> (Pointer a, Memory)
+
+
+-- StateOp declarations and such
+data StateOp a = StateOp (Memory -> (a, Memory))
+
+runOp :: StateOp a -> Memory -> (a, Memory)
+runOp (StateOp op) mem = op mem
+
+-- StateOp chaining declarations
+-- "return"
+returnVal :: a -> StateOp a
+returnVal = undefined
+
+-- "then"
+(>>>) :: StateOp a -> StateOp b -> StateOp b
+(>>>) = undefined
+
+-- "bind"
+(>~>) :: StateOp a -> (a -> StateOp b) -> StateOp b
+(>~>) = undefined
+
+-- | Memory allocation functions using StateOp
+-- Allocating memory
+alloc :: Mutable a => a -> StateOp (Pointer a)
+alloc = undefined
+
+-- Deallocating memory
+free :: Mutable a => Pointer a -> StateOp ()
+free = undefined
