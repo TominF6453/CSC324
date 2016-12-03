@@ -24,21 +24,14 @@ type Memory = AList Integer Value
 -- A type representing a pointer to a location in memory.
 data Pointer a = P Integer
 
-
 -- Type class representing a type which can be stored in "Memory".
 class Mutable a where
     -- Look up a value in memory referred to by a pointer.
     get :: Memory -> Pointer a -> a
-	get mem (P x) = if (containsA mem x) then
-						lookupA mem x
-                    else
-						error "Doesn't exist"
 
     -- Change a value in memory referred to by a pointer.
     -- Return the new memory after the update.
     set :: Memory -> Pointer a -> a -> Memory
-	set mem (P x) val | containsA mem x = updateA mem (x, val)
-				      | otherwise 		= error "Doesn't exist"
 
     -- Create a new memory location storing a value, returning a new pointer
     -- and the new memory with the new value.
