@@ -90,15 +90,20 @@ runOp (StateOp op) mem = op mem
 -- StateOp chaining declarations
 -- "return"
 returnVal :: a -> StateOp a
-returnVal = undefined
+returnVal val = (StateOp val)
 
 -- "then"
 (>>>) :: StateOp a -> StateOp b -> StateOp b
-(>>>) = undefined
+op1 >>> op2 = \s ->
+	let (_, s1) = op1 s
+	in op2 s1
 
 -- "bind"
 (>~>) :: StateOp a -> (a -> StateOp b) -> StateOp b
-(>~>) = undefined
+(f >~> g) s =
+	let (x, s1) = f s
+		newStateOp = g x
+	in newStateOp s1
 
 -- | Memory allocation functions using StateOp
 -- Allocating memory
