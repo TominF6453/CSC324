@@ -24,7 +24,7 @@ data Value = IntVal Integer |
 type Memory = AList Integer Value
 
 -- A type representing a pointer to a location in memory.
-data Pointer a = P Integer
+data Pointer a = P Integer deriving Show
 
 -- Type class representing a type which can be stored in "Memory".
 class Mutable a where
@@ -61,7 +61,7 @@ instance Mutable Integer where
 	def mem int val = if (containsA mem int) then
 						  error "Already exists"
 					  else
-						  ((P int), insertA mem (int, (IntVal val)))
+						  (P int, insertA mem (int, (IntVal val)))
 
 instance Mutable Bool where
 
