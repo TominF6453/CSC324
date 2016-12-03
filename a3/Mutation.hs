@@ -29,16 +29,19 @@ data Pointer a = P Integer deriving Show
 -- Type class representing a type which can be stored in "Memory".
 class Mutable a where
     -- Look up a value in memory referred to by a pointer.
-    get :: Memory -> Pointer a -> a
+    -- Result part of StateOp tuple must be of type a
+    get :: Pointer a -> StateOp a
 
     -- Change a value in memory referred to by a pointer.
     -- Return the new memory after the update.
-    set :: Memory -> Pointer a -> a -> Memory
+    -- Result part of StateOp tuple must be of type void
+    set :: Pointer a -> a -> StateOp ()
 
     -- Create a new memory location storing a value, returning a new pointer
     -- and the new memory with the new value.
     -- Raise an error if the input Integer is already storing a value.
-    def :: Memory -> Integer -> a -> (Pointer a, Memory)
+    -- Result part of StateOp tuple must be a Pointer of type a
+    def :: Integer -> a -> StateOp (Pointer a)
 
 extractInt :: Value -> Integer
 extractInt (IntVal x) = x
@@ -48,37 +51,55 @@ extractBool (BoolVal b) = b
 
 instance Mutable Integer where
 
-    get mem (P p) = if (containsA mem p) then
-                        extractInt (lookupA mem p)
-                    else
-                        error "Doesn't exist"
+    {-Should return the contents of the pointer => use lookup results in result position-}
+    get (P p) = (StateOp lambda) where
+        lambda = \mem -> ((if (containsA mem p) then
+                               extractInt (lookupA mem p)
+                           else
+                               error "Doesn't exist"),
+                           mem)
 
-    set mem (P p) val = if (containsA mem p) then
-                            updateA mem (p, (IntVal val))
-                        else
-                            error "Doesn't exist"
+    {-This shouldn't return anything (i.e. void) => use () in result position-}
+    set (P p) val = (StateOp lambda) where
+        lambda = \mem -> ((),
+                          (if (containsA mem p) then
+                               updateA mem (p, (IntVal val))
+                           else
+                               error "Doesn't exist"))
 
-    def mem int val = if (containsA mem int) then
-                          error "Already exists"
-                      else
-                          (P int, insertA mem (int, (IntVal val)))
+    {-This should return the new pointer in the result position, 
+    and the new memory in the memory position (throw an error if the input is used!)-}
+    def int val = (StateOp lambda) where 
+        lambda = \mem -> if (containsA mem int) then
+                             error "Already exists"
+                         else
+                             (P int, insertA mem (int, (IntVal val)))
 
 instance Mutable Bool where
 
-    get mem (P p) = if (containsA mem p) then
-                        extractBool (lookupA mem p)
-                    else
-                        error "Doesn't exist"
+    {-Should return the contents of the pointer => use lookup results in result position-}
+    get (P p) = (StateOp lambda) where
+        lambda = \mem -> ((if (containsA mem p) then
+                               extractBool (lookupA mem p)
+                           else
+                               error "Doesn't exist"),
+                           mem)
 
-    set mem (P p) val = if (containsA mem p) then
-                            updateA mem (p, (BoolVal val))
-                        else
-                            error "Doesn't exist"
+    {-This shouldn't return anything (i.e. void) => use () in result position-}
+    set (P p) val = (StateOp lambda) where
+        lambda = \mem -> ((),
+                          (if (containsA mem p) then
+                               updateA mem (p, (BoolVal val))
+                           else
+                               error "Doesn't exist"))
 
-    def mem int val = if (containsA mem int) then
-                          error "Already exists"
-                      else
-                          (P int, insertA mem (int, (BoolVal val)))
+    {-This should return the new pointer in the result position, 
+    and the new memory in the memory position (throw an error if the input is used!)-}
+    def int val = (StateOp lambda) where 
+        lambda = \mem -> if (containsA mem int) then
+                             error "Already exists"
+                         else
+                             (P int, insertA mem (int, (BoolVal val)))
 
 
 -- StateOp declarations and such
