@@ -90,13 +90,14 @@ runOp (StateOp op) mem = op mem
 -- StateOp chaining declarations
 -- "return"
 returnVal :: a -> StateOp a
-returnVal val = (StateOp val)
+returnVal = undefined
 
 -- "then"
 (>>>) :: StateOp a -> StateOp b -> StateOp b
-op1 >>> op2 = \s ->
-    let (_, s1) = op1 s
-    in op2 s1
+op1 >>> op2 = (StateOp x) where
+    x = \s ->
+        let (_, s1) = runOp op1 s
+        in  runOp op2 s1 
 
 -- "bind"
 (>~>) :: StateOp a -> (a -> StateOp b) -> StateOp b
