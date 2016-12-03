@@ -6,9 +6,11 @@ which you will use as the data structure for storing "mutable" data.
 
 -- **YOU MUST ADD ALL FUNCTIONS AND TYPES TO THIS LIST AS YOU CREATE THEM!!**
 module Mutation (
+    Memory, Pointer(..), Value(..),
     Mutable, get, set, def,
-    Memory, Pointer
-    )
+    StateOp(..),
+    (>>>), (>~>), returnVal,
+    alloc, free)
     where
 
 import AList (AList, lookupA, insertA, updateA, containsA)
@@ -38,11 +40,37 @@ class Mutable a where
     -- Raise an error if the input Integer is already storing a value.
     def :: Memory -> Integer -> a -> (Pointer a, Memory)
 
+extractInt :: Value -> Integer
+extractInt (IntVal x) = x
+
+extractBool :: Value -> Bool
+extractBool (BoolVal b) = b
+
 instance Mutable Integer where
+
     get mem (P p) = if (containsA mem p) then
-                        (lookupA mem p)
+                        extractInt (lookupA mem p)
                     else
                         error "Doesn't exist"
+
+    set mem (P p) val = if (containsA mem p) then
+                            updateA mem (p, (IntVal val))
+                        else
+                            error "Doesn't exist"
+
+instance Mutable Bool where
+
+    get mem (P p) = if (containsA mem p) then
+                        extractBool (lookupA mem p)
+                    else
+                        error "Doesn't exist"
+
+    set mem (P p) val = if (containsA mem p) then
+                            updateA mem (p, (BoolVal val))
+                        else
+                            error "Doesn't exist"
+
+
 
 -- StateOp declarations and such
 data StateOp a = StateOp (Memory -> (a, Memory))
