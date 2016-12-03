@@ -21,7 +21,7 @@ pointerTest num mem = ((firstPtr, secondPtr), secondMem) where
 							secondMem = snd secondPair
 
 swap :: Mutable a => Pointer a -> Pointer a -> StateOp ()
-swap = undefined
+swap (P p1) (P p2) = undefined
 
 swapCycle :: Mutable a => [Pointer a] -> StateOp ()
-swapCycle = undefined
+swapCycle ((P p):ps) = undefined
