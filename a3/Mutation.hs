@@ -38,14 +38,11 @@ class Mutable a where
     -- Raise an error if the input Integer is already storing a value.
     def :: Memory -> Integer -> a -> (Pointer a, Memory)
 
-<<<<<<< HEAD
 instance Mutable Integer where
     get mem (P p) = if (containsA mem p) then
                         (lookupA mem p)
                     else
                         error "Doesn't exist"
-
-=======
 
 -- StateOp declarations and such
 data StateOp a = StateOp (Memory -> (a, Memory))
@@ -74,4 +71,3 @@ alloc = undefined
 -- Deallocating memory
 free :: Mutable a => Pointer a -> StateOp ()
 free = undefined
->>>>>>> b159c1506da9c63e341be8cb0c856d525ca126c1
