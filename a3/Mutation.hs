@@ -90,7 +90,7 @@ runOp (StateOp op) mem = op mem
 -- StateOp chaining declarations
 -- "return"
 returnVal :: a -> StateOp a
-returnVal = undefined
+returnVal a = (StateOp (\x -> (a, x)))
 
 -- "then"
 (>>>) :: StateOp a -> StateOp b -> StateOp b
