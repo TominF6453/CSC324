@@ -2,6 +2,12 @@
 
 This file contains code which uses the mutation library found in Mutation.hs
 -}
+module MutationUser (
+    pointerTest,
+    swap,
+    swapCycle
+    )
+    where
 
 import Mutation (
     get, set, def, Mutable, Pointer(..), StateOp(..), Memory, (>>>), (>~>),
@@ -19,6 +25,7 @@ pointerTest num = def 100 (num + 3) >~> \p1 ->
                       def 500 (num > 0) >~> \p2 ->
                       returnVal (p1, p2)
 
+-- | Given two pointers, swaps the values that the pointers point to in memory
 swap :: Mutable a => Pointer a -> Pointer a -> StateOp ()
 swap p1 p2 = (StateOp lambda) where
     lambda = \mem ->
@@ -28,7 +35,13 @@ swap p1 p2 = (StateOp lambda) where
             (_, mem4) = runOp (set p1 y) mem3
         in ((), mem4)
 
+-- | Given a list of pointers, left shift the values that they point to.
 swapCycle :: Mutable a => [Pointer a] -> StateOp ()
-swapCycle ((P p):ps) = (StateOp lambda) where
+swapCycle (p:[]) = (StateOp lambda) where
     lambda = \mem ->
-        
+        let (_, mem1) = runOp (get p) mem
+        in ((), mem1)
+swapCycle (p1:p2:ps) = (StateOp lambda) where
+    lambda = \mem ->
+        let (_, mem1) = runOp (swap p1 p2) mem
+        in runOp (swapCycle (p2:ps)) mem1
