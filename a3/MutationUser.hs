@@ -17,7 +17,7 @@ import Mutation (
 pointerTest :: Integer -> StateOp (Pointer Integer, Pointer Bool)
 pointerTest num = def 100 (num + 3) >~> \p1 ->
                       def 500 (num > 0) >~> \p2 ->
-                            returnVal (p1, p2)
+                      returnVal (p1, p2)
 
 swap :: Mutable a => Pointer a -> Pointer a -> StateOp ()
 swap (P x) (P y) = undefined
