@@ -13,7 +13,7 @@ module Mutation (
     alloc, free)
     where
 
-import AList (AList, lookupA, insertA, updateA, containsA)
+import AList (AList, lookupA, insertA, updateA, containsA, freeA)
 
 -- A type representing the possible values stored in memory.
 data Value = IntVal Integer |
@@ -115,18 +115,18 @@ returnVal a = (StateOp (\x -> (a, x)))
 
 -- "then"
 (>>>) :: StateOp a -> StateOp b -> StateOp b
-op1 >>> op2 = (StateOp x) where
-    x = \s ->
-        let (_, s1) = runOp op1 s
-        in  runOp op2 s1 
+op1 >>> op2 = (StateOp lambda) where
+    lambda = \mem ->
+        let memAfterOp1 = snd (runOp op1 mem)
+        in  runOp op2 memAfterOp1
 
 -- "bind"
 (>~>) :: StateOp a -> (a -> StateOp b) -> StateOp b
-f >~> g = (StateOp y) where
-    y = \s ->
-        let (x, s1) = runOp f s
-            newStateOp = g x
-        in runOp newStateOp s1
+f >~> g = (StateOp lambda) where
+    lambda = \mem ->
+        let (result, memAfterOp1) = runOp f mem
+            newStateOp = g result
+        in (runOp newStateOp memAfterOp1)
 
 -- | Memory allocation functions using StateOp
 -- Allocating memory
@@ -147,5 +147,11 @@ allocHelper mem lst = if (containsA mem (head lst)) then
                           head lst
 
 -- Deallocating memory
+{-Returns void, so return value should be ().
+  Memory value should be the memory after the removal-}
 free :: Mutable a => Pointer a -> StateOp ()
-free = undefined
+free (P p) = (StateOp lambda) where
+    lambda = \mem -> if (containsA mem p) then 
+                         ((), (freeA mem p))
+                     else
+                         error "Doesn't exist"
