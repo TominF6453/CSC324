@@ -6,7 +6,7 @@ which you will use as the data structure for storing "mutable" data.
 
 -- **YOU MUST ADD ALL FUNCTIONS AND TYPES TO THIS LIST AS YOU CREATE THEM!!**
 module Mutation (
-    Memory, Pointer(..), Value(..),
+    Memory, Pointer(..), Value(..), Person,
     Mutable, get, set, def,
     StateOp(..), runOp,
     (>>>), (>~>), returnVal,
@@ -19,6 +19,10 @@ import AList (AList, lookupA, insertA, updateA, containsA, freeA)
 data Value = IntVal Integer |
              BoolVal Bool
              deriving Show
+
+-- A type representing a person with two attributes:
+-- age and whether they are a student or not.
+data Person = Person Integer Bool deriving Show
 
 -- A type representing a container for stored "mutable" values.
 type Memory = AList Integer Value
