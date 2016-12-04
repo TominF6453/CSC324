@@ -117,16 +117,16 @@ returnVal a = (StateOp (\x -> (a, x)))
 (>>>) :: StateOp a -> StateOp b -> StateOp b
 op1 >>> op2 = (StateOp lambda) where
     lambda = \mem ->
-        let memAfterOp1 = snd (runOp op1 mem)
-        in  runOp op2 memAfterOp1
+        let mem1 = snd (runOp op1 mem)
+        in  runOp op2 mem1
 
 -- "bind"
 (>~>) :: StateOp a -> (a -> StateOp b) -> StateOp b
 f >~> g = (StateOp lambda) where
     lambda = \mem ->
-        let (result, memAfterOp1) = runOp f mem
-            newStateOp = g result
-        in (runOp newStateOp memAfterOp1)
+        let (result, mem1) = runOp f mem
+            newOp = g result
+        in (runOp newOp mem1)
 
 -- | Memory allocation functions using StateOp
 -- Allocating memory

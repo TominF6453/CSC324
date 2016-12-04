@@ -5,7 +5,7 @@ This file contains code which uses the mutation library found in Mutation.hs
 
 import Mutation (
     get, set, def, Mutable, Pointer(..), StateOp(..), Memory, (>>>), (>~>),
-    returnVal, Value(..), runOp, free)
+    returnVal, Value(..), runOp, alloc, free)
 
 -- | Takes a number <n> and memory, and stores two new values in memory:
 --   - the integer (n + 3) at location 100
@@ -20,16 +20,15 @@ pointerTest num = def 100 (num + 3) >~> \p1 ->
                       returnVal (p1, p2)
 
 swap :: Mutable a => Pointer a -> Pointer a -> StateOp ()
-swap (P x) (P y) = undefined
-
-{-
-Imperative code for swapping:
-x = 1
-y = 2
-tmpX = x
-x = y
-y = tmpX
--}
+swap p1 p2 = (StateOp lambda) where
+    lambda = \mem ->
+        let (x, mem1) = runOp (get p1) mem
+            (y, mem2) = runOp (get p2) mem1
+            (_, mem3) = runOp (set p2 x) mem2
+            (_, mem4) = runOp (set p1 y) mem3
+        in ((), mem4)
 
 swapCycle :: Mutable a => [Pointer a] -> StateOp ()
-swapCycle ((P p):ps) = undefined
+swapCycle ((P p):ps) = (StateOp lambda) where
+    lambda = \mem ->
+        
