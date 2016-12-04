@@ -154,3 +154,19 @@ free (P p) = (StateOp lambda) where
                      else
                          error "Doesn't exist"
 
+-- Testing function defined in A3.pdf
+personTest :: Person -> Integer -> StateOp (Integer, Bool, Person)
+personTest person x =
+	-- not using alloc
+	def 1 person >~> \personPointer ->
+	get (personPointer @@ age) >~> \oldAge ->
+	set (personPointer @@ age) x >>>
+	get (personPointer @@ isStudent) >~> \stu ->
+	get (personPointer @@ age) >~> \newAge ->
+	set personPointer (Person (2 * newAge) (not stu)) >>>
+	get personPointer >~> \newPerson ->
+	get (personPointer @@ isStudent) >~> \newStu ->
+	returnVal (oldAge, newStu, newPerson)
+
+-- > fst (runOp (personTest (Person 2 True) 10) [])
+-- (2, False, Person 20 False)
