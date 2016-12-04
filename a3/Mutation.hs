@@ -131,13 +131,9 @@ f >~> g = (StateOp lambda) where
 -- | Memory allocation functions using StateOp
 -- Allocating memory
 alloc :: Mutable a => a -> StateOp (Pointer a)
-alloc = undefined
-{-alloc y = (StateOp lambda) where
+alloc val = (StateOp lambda) where
     lambda = \mem -> let x = allocHelper mem [0..]
-                     in (P x, insertA mem (x, y))
-alloc z = (StateOp lambda) where
-    lambda = \mem -> let x = allocHelper mem [0..]
-                     in (P x, insertA mem (x, (IntVal z)))-}
+                     in runOp (def x val) mem
 
 -- Finds the first integer from 0 and on which is not contained in the Memory
 allocHelper :: Memory -> [Integer] -> Integer
@@ -147,8 +143,6 @@ allocHelper mem lst = if (containsA mem (head lst)) then
                           head lst
 
 -- Deallocating memory
-{-Returns void, so return value should be ().
-  Memory value should be the memory after the removal-}
 free :: Mutable a => Pointer a -> StateOp ()
 free (P p) = (StateOp lambda) where
     lambda = \mem -> if (containsA mem p) then 
