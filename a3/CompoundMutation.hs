@@ -28,7 +28,17 @@ data Person = Person Integer Bool deriving Show
 type Memory = AList Integer Value
 
 -- A type representing a pointer to a location in memory.
-data Pointer a = P Integer deriving Show
+data Pointer a = P Integer |
+                 PersonPtr Integer Integer deriving Show
+
+(@@) :: Pointer a -> (Pointer a -> Pointer b) -> Pointer b
+(PersonPtr x y) @@ fxn = fxn (PersonPtr x y)
+
+age :: Pointer Person -> Pointer Integer
+age (PersonPtr x y) = (P x)
+
+isStudent :: Pointer Person -> Pointer Bool 
+isStudent (PersonPtr x y) = (P y)
 
 -- Type class representing a type which can be stored in "Memory".
 class Mutable a where
@@ -93,6 +103,31 @@ instance Mutable Bool where
     set (P p) val = (StateOp lambda) where
         lambda = \mem -> ((),
                           (if (containsA mem p) then
+                               updateA mem (p, (BoolVal val))
+                           else
+                               error "Doesn't exist"))
+
+    {-This should return the new pointer in the result position, 
+    and the new memory in the memory position (throw an error if the input is used!)-}
+    def int val = (StateOp lambda) where 
+        lambda = \mem -> if (containsA mem int) then
+                             error "Already exists"
+                         else
+                             (P int, insertA mem (int, (BoolVal val)))
+
+instance Mutable Person where
+   {-Should return the contents of the pointer => use lookup results in result position-}
+    get (PersonPtr x y) = (StateOp lambda) where
+        lambda = \mem -> ((if (containsA mem x) && (containsA mem y) then
+                               (Person (lookupA mem x) (lookupA mem y))
+                           else
+                               error "Doesn't exist"),
+                           mem)
+
+    {-This shouldn't return anything (i.e. void) => use () in result position-}
+    set (PersonPtr x y) val = (StateOp lambda) where
+        lambda = \mem -> ((),
+                          (if (containsA mem x) && (containsA mem y) then
                                updateA mem (p, (BoolVal val))
                            else
                                error "Doesn't exist"))
