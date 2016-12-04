@@ -8,7 +8,7 @@ which you will use as the data structure for storing "mutable" data.
 module Mutation (
     Memory, Pointer(..), Value(..),
     Mutable, get, set, def,
-    StateOp(..),
+    StateOp(..), runOp,
     (>>>), (>~>), returnVal,
     alloc, free)
     where
@@ -132,6 +132,19 @@ f >~> g = (StateOp y) where
 -- Allocating memory
 alloc :: Mutable a => a -> StateOp (Pointer a)
 alloc = undefined
+{-alloc y = (StateOp lambda) where
+    lambda = \mem -> let x = allocHelper mem [0..]
+                     in (P x, insertA mem (x, y))
+alloc z = (StateOp lambda) where
+    lambda = \mem -> let x = allocHelper mem [0..]
+                     in (P x, insertA mem (x, (IntVal z)))-}
+
+-- Finds the first integer from 0 and on which is not contained in the Memory
+allocHelper :: Memory -> [Integer] -> Integer
+allocHelper mem lst = if (containsA mem (head lst)) then
+                          allocHelper mem (tail lst)
+                      else
+                          head lst
 
 -- Deallocating memory
 free :: Mutable a => Pointer a -> StateOp ()

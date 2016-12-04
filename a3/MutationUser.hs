@@ -4,18 +4,20 @@ This file contains code which uses the mutation library found in Mutation.hs
 -}
 
 import Mutation (
-    get, set, def, Mutable, Pointer, StateOp(..), Memory, (>>>), (>~>))
+    get, set, def, Mutable, Pointer(..), StateOp(..), Memory, (>>>), (>~>),
+    returnVal, Value(..), runOp)
 
 -- | Takes a number <n> and memory, and stores two new values in memory:
 --   - the integer (n + 3) at location 100
 --   - the boolean (n > 0) at location 500
 --   Return the pointer to each stored value, and the new memory.
 --   You may assume these locations are not already used by the memory.
-pointerTest :: Integer -> Memory -> ((Pointer Integer, Pointer Bool), Memory)
-pointerTest num mem = (registerInt >>> registerBool) mem where
-    registerInt = (def 100 (num + 3))
-    registerBool = (def 500 (num > 0))
-
+--   Original:
+-- pointerTest :: Integer -> Memory -> ((Pointer Integer, Pointer Bool), Memory)
+pointerTest :: Integer -> StateOp (Pointer Integer, Pointer Bool)
+pointerTest num = def 100 (num + 3) >~> \p1 ->
+                      def 500 (num > 0) >~> \p2 ->
+                      returnVal (p1, p2)
                         {-((firstPtr, secondPtr), secondMem) where
                             firstLambda = (def 100 (num + 3))
                             firstPair = firstLambda mem
