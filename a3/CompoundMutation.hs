@@ -125,21 +125,23 @@ instance Mutable Person where
                            mem)
 
     {-This shouldn't return anything (i.e. void) => use () in result position-}
-    set (PersonPtr x y) val = (StateOp lambda) where
+    set (PersonPtr x y) (Person a i) = (StateOp lambda) where
         lambda = \mem -> ((),
                           (if (containsA mem x) && (containsA mem y) then
-                               updateA mem (p, (BoolVal val))
+                               (updateA mem (x, (IntVal a))) >>
+                               (updateA mem (y, (BoolVal i)))
                            else
                                error "Doesn't exist"))
 
     {-This should return the new pointer in the result position, 
     and the new memory in the memory position (throw an error if the input is used!)-}
-    def int val = (StateOp lambda) where 
+    def int (Person a i) = (StateOp lambda) where 
         lambda = \mem -> if (containsA mem int) then
                              error "Already exists"
                          else
-                             (P int, insertA mem (int, (BoolVal val)))
-
+                             ((PersonPtr int (int + 1)), 
+                              ((insertA mem (int, (IntVal a))) >>
+                                insertA mem (int + 1, (BoolVal i))))
 
 -- StateOp declarations and such
 data StateOp a = StateOp (Memory -> (a, Memory))
