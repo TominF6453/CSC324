@@ -119,7 +119,8 @@ instance Mutable Person where
    {-Should return the contents of the pointer => use lookup results in result position-}
     get (PersonPtr x y) = (StateOp lambda) where
         lambda = \mem -> ((if (containsA mem x) && (containsA mem y) then
-                               (Person (lookupA mem x) (lookupA mem y))
+                               (Person (extractInt(lookupA mem x)) 
+                                       (extractBool(lookupA mem y)))
                            else
                                error "Doesn't exist"),
                            mem)
@@ -194,16 +195,16 @@ free (P p) = (StateOp lambda) where
 -- Testing function defined in A3.pdf
 personTest :: Person -> Integer -> StateOp (Integer, Bool, Person)
 personTest person x =
-	-- not using alloc
-	def 1 person >~> \personPointer ->
-	get (personPointer @@ age) >~> \oldAge ->
-	set (personPointer @@ age) x >>>
-	get (personPointer @@ isStudent) >~> \stu ->
-	get (personPointer @@ age) >~> \newAge ->
-	set personPointer (Person (2 * newAge) (not stu)) >>>
-	get personPointer >~> \newPerson ->
-	get (personPointer @@ isStudent) >~> \newStu ->
-	returnVal (oldAge, newStu, newPerson)
+    -- not using alloc
+    def 1 person >~> \personPointer ->
+    get (personPointer @@ age) >~> \oldAge ->
+    set (personPointer @@ age) x >>>
+    get (personPointer @@ isStudent) >~> \stu ->
+    get (personPointer @@ age) >~> \newAge ->
+    set personPointer (Person (2 * newAge) (not stu)) >>>
+    get personPointer >~> \newPerson ->
+    get (personPointer @@ isStudent) >~> \newStu ->
+    returnVal (oldAge, newStu, newPerson)
 
 -- > fst (runOp (personTest (Person 2 True) 10) [])
 -- (2, False, Person 20 False)
